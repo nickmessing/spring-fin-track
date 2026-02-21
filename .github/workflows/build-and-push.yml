@@ -10,13 +10,21 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Install Podman
+        run: |
+          sudo apt-get update
+          sudo apt-get -y install podman
+
       - name: Log in to Harbor
-        run: echo "${{ secrets.HARBOR_PASSWORD }}" | docker login harbor.nickmessing.com -u "${{ secrets.HARBOR_USERNAME }}" --password-stdin
+        run: echo "$HARBOR_PASSWORD" | podman login harbor.nickmessing.com -u "$HARBOR_USERNAME" --password-stdin
+        env:
+          HARBOR_USERNAME: ${{ secrets.HARBOR_USERNAME }}
+          HARBOR_PASSWORD: ${{ secrets.HARBOR_PASSWORD }}
 
       - name: Build container image
-        run: docker build -t harbor.nickmessing.com/library/finance-tracker:${{ github.sha }} -t harbor.nickmessing.com/library/finance-tracker:latest ./server
+        run: podman build -t harbor.nickmessing.com/library/finance-tracker:${{ github.sha }} -t harbor.nickmessing.com/library/finance-tracker:latest ./server
 
       - name: Push image
         run: |
-          docker push harbor.nickmessing.com/library/finance-tracker:${{ github.sha }}
-          docker push harbor.nickmessing.com/library/finance-tracker:latest
+          podman push harbor.nickmessing.com/library/finance-tracker:${{ github.sha }}
+          podman push harbor.nickmessing.com/library/finance-tracker:latest
