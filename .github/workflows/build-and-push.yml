@@ -1,0 +1,29 @@
+name: Build and Push Container Image
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Podman
+        run: |
+          sudo apt-get update
+          sudo apt-get -y install podman
+
+      - name: Build container image
+        run: podman build -t finance-tracker:${{ github.sha }} ./server
+
+      - name: Log in to Harbor
+        run: podman login harbor.nickmessing.com -u "${{ secrets.HARBOR_USERNAME }}" -p "${{ secrets.HARBOR_PASSWORD }}"
+
+      - name: Tag and push image
+        run: |
+          podman tag finance-tracker:${{ github.sha }} harbor.nickmessing.com/library/finance-tracker:${{ github.sha }}
+          podman tag finance-tracker:${{ github.sha }} harbor.nickmessing.com/library/finance-tracker:latest
+          podman push harbor.nickmessing.com/library/finance-tracker:${{ github.sha }}
+          podman push harbor.nickmessing.com/library/finance-tracker:latest
