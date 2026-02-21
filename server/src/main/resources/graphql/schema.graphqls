@@ -70,6 +70,7 @@ type Account {
   name: String!
   currency: Currency!
   balance: Float!
+  initialBalance: Float!
   createdAt: DateTime!
 }
 
@@ -167,12 +168,14 @@ input CreateAccountInput {
   icon: String!
   name: String!
   currencyId: ID!
+  initialBalance: Float!
 }
 
 input UpdateAccountInput {
   id: ID!
   icon: String
   name: String
+  initialBalance: Float
 }
 
 input CreateTransactionInput {
