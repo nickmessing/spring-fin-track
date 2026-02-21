@@ -107,7 +107,7 @@ type TransactionConnection {
 }
 
 type Query {
-  me: User!
+  me: User
   currency(id: ID!): Currency
   currencies(
     first: Int
