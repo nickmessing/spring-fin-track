@@ -1,3 +1,251 @@
+scalar DateTime
+
+enum CategoryKind {
+  INCOME
+  EXPENSE
+}
+
+enum TransactionKind {
+  INCOME
+  EXPENSE
+  TRANSFER
+}
+
+type PageInfo {
+  hasNextPage: Boolean!
+  hasPreviousPage: Boolean!
+  startCursor: String
+  endCursor: String
+}
+
+type User {
+  id: ID!
+  email: String!
+  displayName: String
+  createdAt: DateTime!
+  balance: Float!
+  currency: Currency
+}
+
+type Currency {
+  id: ID!
+  symbol: String!
+  name: String!
+  isDefault: Boolean!
+  rate: Float!
+  createdAt: DateTime!
+}
+
+type CurrencyEdge {
+  node: Currency!
+  cursor: String!
+}
+
+type CurrencyConnection {
+  edges: [CurrencyEdge!]!
+  pageInfo: PageInfo!
+}
+
+type Category {
+  id: ID!
+  kind: CategoryKind!
+  icon: String!
+  name: String!
+  createdAt: DateTime!
+}
+
+type CategoryEdge {
+  node: Category!
+  cursor: String!
+}
+
+type CategoryConnection {
+  edges: [CategoryEdge!]!
+  pageInfo: PageInfo!
+}
+
+type Account {
+  id: ID!
+  icon: String!
+  name: String!
+  currency: Currency!
+  balance: Float!
+  initialBalance: Float!
+  createdAt: DateTime!
+}
+
+type AccountEdge {
+  node: Account!
+  cursor: String!
+}
+
+type AccountConnection {
+  edges: [AccountEdge!]!
+  pageInfo: PageInfo!
+}
+
+type Transaction {
+  id: ID!
+  kind: TransactionKind!
+  amount: Float!
+  destinationAmount: Float # for transfer transactions, inter-currency transfers
+  description: String
+  account: Account!
+  destinationAccount: Account
+  category: Category
+  createdAt: DateTime!
+}
+
+type TransactionEdge {
+  node: Transaction!
+  cursor: String!
+}
+
+type TransactionConnection {
+  edges: [TransactionEdge!]!
+  pageInfo: PageInfo!
+}
+
 type Query {
-  hello: String!
+  me: User!
+  currency(id: ID!): Currency
+  currencies(
+    first: Int
+    after: String
+    last: Int
+    before: String
+  ): CurrencyConnection!
+  category(id: ID!): Category
+  categories(
+    kind: CategoryKind
+    first: Int
+    after: String
+    last: Int
+    before: String
+  ): CategoryConnection!
+  account(id: ID!): Account
+  accounts(
+    first: Int
+    after: String
+    last: Int
+    before: String
+  ): AccountConnection!
+  transaction(id: ID!): Transaction
+  transactions(
+    first: Int
+    after: String
+    last: Int
+    before: String
+  ): TransactionConnection!
+}
+
+input CreateCurrencyInput {
+  symbol: String!
+  name: String!
+  isDefault: Boolean
+}
+
+input UpdateCurrencyInput {
+  id: ID!
+  symbol: String
+  name: String
+  isDefault: Boolean
+}
+
+input CreateCategoryInput {
+  kind: CategoryKind!
+  icon: String!
+  name: String!
+}
+
+input UpdateCategoryInput {
+  id: ID!
+  icon: String
+  name: String
+}
+
+input CreateAccountInput {
+  icon: String!
+  name: String!
+  currencyId: ID!
+  initialBalance: Float!
+}
+
+input UpdateAccountInput {
+  id: ID!
+  icon: String
+  name: String
+  initialBalance: Float
+}
+
+input CreateTransactionInput {
+  kind: TransactionKind!
+  amount: Float!
+  destinationAmount: Float
+  description: String
+  accountId: ID!
+  destinationAccountId: ID
+  categoryId: ID
+}
+
+input UpdateTransactionInput {
+  id: ID!
+  amount: Float
+  destinationAmount: Float
+  description: String
+  accountId: ID
+  destinationAccountId: ID
+  categoryId: ID
+}
+
+type AuthPayload {
+  token: String!
+  user: User!
+}
+
+input SignUpInput {
+  email: String!
+  password: String!
+  displayName: String
+}
+
+input SignInInput {
+  email: String!
+  password: String!
+}
+
+type Mutation {
+  signUp(input: SignUpInput!): AuthPayload!
+  signIn(input: SignInInput!): AuthPayload!
+
+  createCurrency(input: CreateCurrencyInput!): Currency!
+  updateCurrency(input: UpdateCurrencyInput!): Currency!
+  deleteCurrency(id: ID!): Boolean!
+
+  createCategory(input: CreateCategoryInput!): Category!
+  updateCategory(input: UpdateCategoryInput!): Category!
+  deleteCategory(id: ID!): Boolean!
+
+  createAccount(input: CreateAccountInput!): Account!
+  updateAccount(input: UpdateAccountInput!): Account!
+  deleteAccount(id: ID!): Boolean!
+
+  createTransaction(input: CreateTransactionInput!): Transaction!
+  updateTransaction(input: UpdateTransactionInput!): Transaction!
+  deleteTransaction(id: ID!): Boolean!
+}
+
+type Subscription {
+  currencyCreated: Currency!
+  currencyUpdated: Currency!
+  currencyDeleted: ID!
+  categoryCreated: Category!
+  categoryUpdated: Category!
+  categoryDeleted: ID!
+  accountCreated: Account!
+  accountUpdated: Account!
+  accountDeleted: ID!
+  transactionCreated: Transaction!
+  transactionUpdated: Transaction!
+  transactionDeleted: ID!
 }
