@@ -9,8 +9,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.graphql.execution.RuntimeWiringConfigurer;
 
-import java.time.OffsetDateTime;
-import java.time.format.DateTimeFormatter;
+import java.time.Instant;
 import java.time.format.DateTimeParseException;
 
 @Configuration
@@ -21,34 +20,33 @@ public class DateTimeScalarConfig {
         GraphQLScalarType dateTimeScalar = GraphQLScalarType.newScalar()
                 .name("DateTime")
                 .description("ISO-8601 date-time")
-                .coercing(new Coercing<OffsetDateTime, String>() {
+                .coercing(new Coercing<Instant, String>() {
                     @Override
                     public String serialize(Object dataFetcherResult, GraphQLContext context, java.util.Locale locale)
                             throws CoercingSerializeException {
-                        if (dataFetcherResult instanceof OffsetDateTime odt) {
-                            return odt.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
+                        if (dataFetcherResult instanceof Instant instant) {
+                            return instant.toString();
                         }
-                        throw new CoercingSerializeException("Expected an OffsetDateTime object");
+                        throw new CoercingSerializeException("Expected an Instant object");
                     }
 
                     @Override
-                    public OffsetDateTime parseValue(Object input, GraphQLContext context, java.util.Locale locale)
+                    public Instant parseValue(Object input, GraphQLContext context, java.util.Locale locale)
                             throws CoercingParseValueException {
                         try {
-                            return OffsetDateTime.parse(input.toString(), DateTimeFormatter.ISO_OFFSET_DATE_TIME);
+                            return Instant.parse(input.toString());
                         } catch (DateTimeParseException e) {
                             throw new CoercingParseValueException("Invalid DateTime value: " + e.getMessage());
                         }
                     }
 
                     @Override
-                    public OffsetDateTime parseLiteral(Value<?> input, CoercedVariables variables,
+                    public Instant parseLiteral(Value<?> input, CoercedVariables variables,
                             GraphQLContext context, java.util.Locale locale)
                             throws CoercingParseLiteralException {
                         if (input instanceof StringValue stringValue) {
                             try {
-                                return OffsetDateTime.parse(stringValue.getValue(),
-                                        DateTimeFormatter.ISO_OFFSET_DATE_TIME);
+                                return Instant.parse(stringValue.getValue());
                             } catch (DateTimeParseException e) {
                                 throw new CoercingParseLiteralException("Invalid DateTime literal: " + e.getMessage());
                             }
