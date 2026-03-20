@@ -56,8 +56,11 @@ public class LongScalarConfig {
                     }
 
                     @Override
-                    public Long parseLiteral(Value<?> input, CoercedVariables variables,
-                            GraphQLContext context, Locale locale)
+                    public Long parseLiteral(
+                            Value<?> input,
+                            CoercedVariables variables,
+                            GraphQLContext context,
+                            Locale locale)
                             throws CoercingParseLiteralException {
                         if (input instanceof IntValue intValue) {
                             BigInteger value = intValue.getValue();

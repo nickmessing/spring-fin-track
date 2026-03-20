@@ -17,10 +17,8 @@ public class CurrencyCodeScalarConfig {
 
     @Bean
     public RuntimeWiringConfigurer currencyCodeWiringConfigurer() {
-        GraphQLScalarType currencyCodeScalar = GraphQLScalarType.newScalar()
-                .name("CurrencyCode")
-                .description("ISO 4217 currency code (e.g. USD, EUR, MDL)")
-                .coercing(new Coercing<Currency, String>() {
+        GraphQLScalarType currencyCodeScalar = GraphQLScalarType.newScalar().name("CurrencyCode")
+                .description("ISO 4217 currency code (e.g. USD, EUR, MDL)").coercing(new Coercing<Currency, String>() {
                     @Override
                     public String serialize(Object dataFetcherResult, GraphQLContext context, Locale locale)
                             throws CoercingSerializeException {
@@ -44,14 +42,17 @@ public class CurrencyCodeScalarConfig {
                     }
 
                     @Override
-                    public Currency parseLiteral(Value<?> input, CoercedVariables variables,
-                            GraphQLContext context, Locale locale)
-                            throws CoercingParseLiteralException {
+                    public Currency parseLiteral(
+                            Value<?> input,
+                            CoercedVariables variables,
+                            GraphQLContext context,
+                            Locale locale) throws CoercingParseLiteralException {
                         if (input instanceof StringValue stringValue) {
                             try {
                                 return Currency.getInstance(stringValue.getValue().toUpperCase());
                             } catch (IllegalArgumentException e) {
-                                throw new CoercingParseLiteralException("Invalid currency code: " + stringValue.getValue());
+                                throw new CoercingParseLiteralException(
+                                        "Invalid currency code: " + stringValue.getValue());
                             }
                         }
                         throw new CoercingParseLiteralException("Expected a StringValue");
@@ -64,8 +65,7 @@ public class CurrencyCodeScalarConfig {
                             throw new CoercingSerializeException("Invalid currency code: " + code);
                         }
                     }
-                })
-                .build();
+                }).build();
 
         return wiringBuilder -> wiringBuilder.scalar(currencyCodeScalar);
     }

@@ -41,8 +41,11 @@ public class DateTimeScalarConfig {
                     }
 
                     @Override
-                    public Instant parseLiteral(Value<?> input, CoercedVariables variables,
-                            GraphQLContext context, java.util.Locale locale)
+                    public Instant parseLiteral(
+                            Value<?> input,
+                            CoercedVariables variables,
+                            GraphQLContext context,
+                            java.util.Locale locale)
                             throws CoercingParseLiteralException {
                         if (input instanceof StringValue stringValue) {
                             try {

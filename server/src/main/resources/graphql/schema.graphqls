@@ -40,7 +40,7 @@ type User {
   createdAt: DateTime!
   updatedAt: DateTime!
   balance: Long!
-  defaultCurrency: CurrencyCode!
+  defaultCurrency: CurrencyInfo!
   currencies: [UserCurrency!]!
 }
 
