@@ -1,5 +1,16 @@
 {
   "java.compile.nullAnalysis.mode": "automatic",
   "java.format.settings.url": "./eclipse-formatter.xml",
-  "java.format.settings.profile": "Project"
+  "java.format.settings.profile": "Project",
+  "explorer.fileNesting.enabled": true,
+  "explorer.fileNesting.patterns": {
+    "tsconfig.json": "tsconfig.*.json, env.d.ts, typed-router.d.ts",
+    "vite.config.*": "jsconfig*, vitest.config.*, cypress.config.*, playwright.config.*",
+    "package.json": "package-lock.json, pnpm*, .yarnrc*, yarn*, .eslint*, eslint*, .oxlint*, oxlint*, .oxfmt*, .prettier*, prettier*, .editorconfig"
+  },
+  "editor.codeActionsOnSave": {
+    "source.fixAll": "explicit"
+  },
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "oxc.oxc-vscode"
 }

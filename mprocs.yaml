@@ -1,0 +1,11 @@
+procs:
+  codegen:
+    shell: cd ui && pnpm graphql-codegen
+
+  svc-spring:
+    shell: cd server && ./mvnw spring-boot:run -Dspring-boot.run.profiles=dev
+
+  svc-ui:
+    shell: cd ui && pnpm dev
+    stop:
+      send-keys: [<C-c>]

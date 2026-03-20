@@ -1,5 +1,11 @@
 # Finance Tracker development task runner
 
+# === Development ===
+
+# Start all services in watch mode
+dev:
+    mprocs
+
 # === Start ===
 
 # Start services: `just start docker`, `just start dev`

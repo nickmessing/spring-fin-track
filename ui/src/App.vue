@@ -1,0 +1,26 @@
+<script setup lang="ts">
+import { useQuery } from '@vue/apollo-composable'
+import { graphql } from './graphql'
+
+const { current } = useQuery(
+  graphql(`
+    query Me {
+      currencies {
+        code
+        name
+      }
+    }
+  `),
+)
+</script>
+
+<template>
+  <h1>You did it!</h1>
+  <p>
+    Visit <a href="https://vuejs.org/" target="_blank" rel="noopener">vuejs.org</a> to read the
+    documentation
+  </p>
+  <pre v-if="current.resultState == 'complete'">{{ current.result.currencies }}</pre>
+</template>
+
+<style scoped></style>
