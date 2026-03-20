@@ -1,4 +1,4 @@
-name: Build and Push Container Image
+name: Build and Deploy
 
 on:
   push:
@@ -29,3 +29,39 @@ jobs:
         run: |
           podman push harbor.nickmessing.com/library/finance-tracker:${{ github.sha }}
           podman push harbor.nickmessing.com/library/finance-tracker:latest
+
+  deploy-frontend:
+    runs-on: ubuntu-latest
+    environment: Production
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.x'
+          cache: 'pnpm'
+          cache-dependency-path: ui/pnpm-lock.yaml
+
+      - run: pnpm install
+        working-directory: ui
+
+      - run: pnpm build
+        working-directory: ui
+
+      - name: Package site
+        run: |
+          mkdir -p /tmp/site
+          echo '{"scope":"public","domain":"finance-tracker","skipCaddyConfig":true}' > /tmp/site/manifest.json
+          cp -r ./ui/dist /tmp/site/dist
+          tar -czf /tmp/site.tgz -C /tmp/site .
+
+      - name: Deploy
+        run: |
+          curl -X POST https://deploy.nickmessing.com/push \
+            -H "Authorization: Bearer ${{ secrets.DEPLOY_TOKEN }}" \
+            --data-binary @/tmp/site.tgz \
+            --fail --show-error
