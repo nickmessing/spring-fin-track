@@ -5,6 +5,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
+import java.util.Currency;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -24,7 +25,7 @@ public interface AccountRepository extends JpaRepository<Account, UUID> {
     Optional<Account> findByIdAndUserId(UUID id, UUID userId);
 
     @Query("SELECT DISTINCT a.currency FROM Account a WHERE a.user.id = :userId")
-    List<String> findDistinctCurrenciesByUserId(UUID userId);
+    List<Currency> findDistinctCurrenciesByUserId(UUID userId);
 
     List<Account> findAllByUserId(UUID userId);
 }

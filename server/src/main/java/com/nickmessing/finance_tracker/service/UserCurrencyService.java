@@ -25,9 +25,7 @@ public class UserCurrencyService {
     private final TransactionService transactionService;
 
     public List<Currency> findUserCurrencies(UUID userId) {
-        return accountRepository.findDistinctCurrenciesByUserId(userId).stream()
-                .map(Currency::getInstance)
-                .toList();
+        return accountRepository.findDistinctCurrenciesByUserId(userId);
     }
 
     /**
@@ -39,9 +37,6 @@ public class UserCurrencyService {
             return 1.0;
         }
 
-        String targetCode = target.getCurrencyCode();
-        String defaultCode = userDefault.getCurrencyCode();
-
         // Try this week's transfers
         Instant weekStart = Instant.now()
                 .atOffset(ZoneOffset.UTC)
@@ -51,10 +46,10 @@ public class UserCurrencyService {
                 .toInstant(ZoneOffset.UTC);
 
         List<Transaction> weekTransfers = transactionRepository
-                .findTransfersInvolvingCurrencySince(userId, targetCode, weekStart);
+                .findTransfersInvolvingCurrencySince(userId, target, weekStart);
 
         List<Double> rates = weekTransfers.stream()
-                .map(t -> extractRate(t, defaultCode, targetCode))
+                .map(t -> extractRate(t, userDefault, target))
                 .filter(r -> r != null)
                 .toList();
 
@@ -64,10 +59,10 @@ public class UserCurrencyService {
 
         // Fall back to last transfer ever
         List<Transaction> lastTransfer = transactionRepository
-                .findTransfersInvolvingCurrency(userId, targetCode, PageRequest.of(0, 1));
+                .findTransfersInvolvingCurrency(userId, target, PageRequest.of(0, 1));
 
         if (!lastTransfer.isEmpty()) {
-            Double rate = extractRate(lastTransfer.getFirst(), defaultCode, targetCode);
+            Double rate = extractRate(lastTransfer.getFirst(), userDefault, target);
             if (rate != null) {
                 return rate;
             }
@@ -98,16 +93,16 @@ public class UserCurrencyService {
      * Extract the rate of targetCurrency in terms of defaultCurrency from a transfer.
      * Rate = how many units of defaultCurrency per 1 unit of targetCurrency (in minor units).
      */
-    private Double extractRate(Transaction t, String defaultCode, String targetCode) {
-        String srcCurrency = t.getAccount().getCurrency().getCurrencyCode();
-        String dstCurrency = t.getDestinationAccount().getCurrency().getCurrencyCode();
+    private Double extractRate(Transaction t, Currency defaultCurrency, Currency targetCurrency) {
+        Currency srcCurrency = t.getAccount().getCurrency();
+        Currency dstCurrency = t.getDestinationAccount().getCurrency();
         long srcAmount = t.getAmount();
         long dstAmount = t.getDestinationAmount() != null ? t.getDestinationAmount() : srcAmount;
 
-        if (srcCurrency.equals(targetCode) && dstCurrency.equals(defaultCode)) {
+        if (srcCurrency.equals(targetCurrency) && dstCurrency.equals(defaultCurrency)) {
             // target -> default: rate = dstAmount / srcAmount
             return (double) dstAmount / srcAmount;
-        } else if (srcCurrency.equals(defaultCode) && dstCurrency.equals(targetCode)) {
+        } else if (srcCurrency.equals(defaultCurrency) && dstCurrency.equals(targetCurrency)) {
             // default -> target: rate = srcAmount / dstAmount
             return (double) srcAmount / dstAmount;
         }

@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 
 import java.time.Instant;
+import java.util.Currency;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -116,12 +117,12 @@ public interface TransactionRepository extends JpaRepository<Transaction, UUID> 
             AND (t.account.currency = :currency OR t.destinationAccount.currency = :currency)
             AND t.createdAt >= :since
             ORDER BY t.createdAt DESC""")
-    List<Transaction> findTransfersInvolvingCurrencySince(UUID userId, String currency, Instant since);
+    List<Transaction> findTransfersInvolvingCurrencySince(UUID userId, Currency currency, Instant since);
 
     @Query("""
             SELECT t FROM Transaction t WHERE t.user.id = :userId AND t.kind = 'TRANSFER'
             AND t.account.currency != t.destinationAccount.currency
             AND (t.account.currency = :currency OR t.destinationAccount.currency = :currency)
             ORDER BY t.createdAt DESC""")
-    List<Transaction> findTransfersInvolvingCurrency(UUID userId, String currency, Pageable pageable);
+    List<Transaction> findTransfersInvolvingCurrency(UUID userId, Currency currency, Pageable pageable);
 }
