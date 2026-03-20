@@ -8,21 +8,65 @@ import { graphql, CategoryKind } from '@/graphql'
 
 const activeTab = ref<'expense' | 'income'>('expense')
 
-const { current, refetch } = useQuery(
+const { current, refetch, fetchMore } = useQuery(
   graphql(`
-    query Categories {
-      categories {
+    query Categories($after: String) {
+      categories(after: $after) {
         edges {
+          cursor
           node {
             id
             kind
             ...CategoryFields
           }
         }
+        pageInfo {
+          hasNextPage
+          endCursor
+        }
       }
     }
   `),
 )
+
+const pageInfo = computed(() =>
+  current.value.resultState === 'complete' ? current.value.result.categories.pageInfo : null,
+)
+
+const loadingMore = ref(false)
+
+async function loadMore() {
+  if (!pageInfo.value?.hasNextPage || loadingMore.value) return
+
+  loadingMore.value = true
+  try {
+    await fetchMore({
+      variables: {
+        after: pageInfo.value.endCursor,
+      },
+      updateQuery(existing, { fetchMoreResult }) {
+        if (fetchMoreResult == null) return existing
+
+        const existingEdges = existing.categories.edges ?? []
+        const incomingEdges = fetchMoreResult.categories.edges ?? []
+        const existingCursors = new Set(existingEdges.map((e) => e.cursor))
+
+        return {
+          ...fetchMoreResult,
+          categories: {
+            ...fetchMoreResult.categories,
+            edges: [
+              ...existingEdges,
+              ...incomingEdges.filter((e) => !existingCursors.has(e.cursor)),
+            ],
+          },
+        }
+      },
+    })
+  } finally {
+    loadingMore.value = false
+  }
+}
 
 const expenseCategories = computed(() =>
   current.value.resultState === 'complete'
@@ -136,6 +180,16 @@ function handleSavedOrDeleted() {
         </p>
       </TabsContent>
     </TabsRoot>
+
+    <!-- Load more -->
+    <button
+      v-if="pageInfo?.hasNextPage"
+      :disabled="loadingMore"
+      class="mt-4 w-full rounded-xl border border-zinc-200 py-2.5 text-sm font-medium text-zinc-600 transition-colors hover:bg-zinc-50 disabled:opacity-50 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-800"
+      @click="loadMore"
+    >
+      {{ loadingMore ? 'Loading...' : 'Load more' }}
+    </button>
 
     <!-- Form dialog -->
     <CategoryFormDialog

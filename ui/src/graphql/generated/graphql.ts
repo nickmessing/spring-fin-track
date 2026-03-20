@@ -52,6 +52,12 @@ export type AuthPayload = {
   user: User;
 };
 
+export type BalancePoint = {
+  __typename: 'BalancePoint';
+  balance: Scalars['Long']['output'];
+  date: Scalars['DateTime']['output'];
+};
+
 export type Category = {
   __typename: 'Category';
   createdAt: Scalars['DateTime']['output'];
@@ -90,6 +96,12 @@ export const CategoryKind = {
 } as const;
 
 export type CategoryKind = typeof CategoryKind[keyof typeof CategoryKind];
+export type CategoryTotal = {
+  __typename: 'CategoryTotal';
+  category: Category;
+  total: Scalars['Long']['output'];
+};
+
 export type CreateAccountInput = {
   currency: Scalars['CurrencyCode']['input'];
   icon: Scalars['String']['input'];
@@ -124,6 +136,13 @@ export type CurrencyInfo = {
   symbol: Scalars['String']['output'];
 };
 
+export const Granularity = {
+  Day: 'DAY',
+  Month: 'MONTH',
+  Week: 'WEEK'
+} as const;
+
+export type Granularity = typeof Granularity[keyof typeof Granularity];
 export type Mutation = {
   __typename: 'Mutation';
   createAccount: Account;
@@ -211,12 +230,14 @@ export type PageInfo = {
 export type Query = {
   __typename: 'Query';
   account?: Maybe<Account>;
+  accountBalanceHistory: Array<BalancePoint>;
   accounts: AccountConnection;
   categories: CategoryConnection;
   category?: Maybe<Category>;
   currencies: Array<CurrencyInfo>;
   currency?: Maybe<CurrencyInfo>;
   me?: Maybe<User>;
+  summary: Summary;
   transaction?: Maybe<Transaction>;
   transactions: TransactionConnection;
 };
@@ -224,6 +245,14 @@ export type Query = {
 
 export type QueryAccountArgs = {
   id: Scalars['ID']['input'];
+};
+
+
+export type QueryAccountBalanceHistoryArgs = {
+  accountId: Scalars['ID']['input'];
+  from: Scalars['DateTime']['input'];
+  granularity: Granularity;
+  to: Scalars['DateTime']['input'];
 };
 
 
@@ -250,6 +279,12 @@ export type QueryCurrencyArgs = {
 };
 
 
+export type QuerySummaryArgs = {
+  from?: InputMaybe<Scalars['DateTime']['input']>;
+  to?: InputMaybe<Scalars['DateTime']['input']>;
+};
+
+
 export type QueryTransactionArgs = {
   id: Scalars['ID']['input'];
 };
@@ -257,6 +292,7 @@ export type QueryTransactionArgs = {
 
 export type QueryTransactionsArgs = {
   after?: InputMaybe<Scalars['String']['input']>;
+  filter?: InputMaybe<TransactionFilterInput>;
   first?: InputMaybe<Scalars['Int']['input']>;
 };
 
@@ -272,17 +308,11 @@ export type SignUpInput = {
   password: Scalars['String']['input'];
 };
 
-export type Subscription = {
-  __typename: 'Subscription';
-  accountCreated: Account;
-  accountDeleted: Scalars['ID']['output'];
-  accountUpdated: Account;
-  categoryCreated: Category;
-  categoryDeleted: Scalars['ID']['output'];
-  categoryUpdated: Category;
-  transactionCreated: Transaction;
-  transactionDeleted: Scalars['ID']['output'];
-  transactionUpdated: Transaction;
+export type Summary = {
+  __typename: 'Summary';
+  byCategory: Array<CategoryTotal>;
+  totalExpense: Scalars['Long']['output'];
+  totalIncome: Scalars['Long']['output'];
 };
 
 export type Transaction = {
@@ -302,6 +332,7 @@ export type Transaction = {
 export type TransactionConnection = {
   __typename: 'TransactionConnection';
   edges: Array<TransactionEdge>;
+  filter: TransactionFilter;
   pageInfo: PageInfo;
 };
 
@@ -309,6 +340,17 @@ export type TransactionEdge = {
   __typename: 'TransactionEdge';
   cursor: Scalars['String']['output'];
   node: Transaction;
+};
+
+export type TransactionFilter = {
+  __typename: 'TransactionFilter';
+  from?: Maybe<Scalars['DateTime']['output']>;
+  to?: Maybe<Scalars['DateTime']['output']>;
+};
+
+export type TransactionFilterInput = {
+  from?: InputMaybe<Scalars['DateTime']['input']>;
+  to?: InputMaybe<Scalars['DateTime']['input']>;
 };
 
 export const TransactionKind = {
@@ -408,13 +450,15 @@ export type SignUpMutationVariables = Exact<{
 
 export type SignUpMutation = { __typename: 'Mutation', signUp: { __typename: 'AuthPayload', token: string } };
 
-export type CategoriesQueryVariables = Exact<{ [key: string]: never; }>;
+export type CategoriesQueryVariables = Exact<{
+  after?: InputMaybe<Scalars['String']['input']>;
+}>;
 
 
-export type CategoriesQuery = { __typename: 'Query', categories: { __typename: 'CategoryConnection', edges: Array<{ __typename: 'CategoryEdge', node: (
+export type CategoriesQuery = { __typename: 'Query', categories: { __typename: 'CategoryConnection', edges: Array<{ __typename: 'CategoryEdge', cursor: string, node: (
         { __typename: 'Category', id: string, kind: CategoryKind }
         & { ' $fragmentRefs'?: { 'CategoryFieldsFragment': CategoryFieldsFragment } }
-      ) }> } };
+      ) }>, pageInfo: { __typename: 'PageInfo', hasNextPage: boolean, endCursor?: string | null } } };
 
 export const CategoryFieldsFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"CategoryFields"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Category"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"icon"}},{"kind":"Field","name":{"kind":"Name","value":"kind"}}]}}]} as unknown as DocumentNode<CategoryFieldsFragment, unknown>;
 export const CreateCategoryDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"CreateCategory"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"CreateCategoryInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"createCategory"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"FragmentSpread","name":{"kind":"Name","value":"CategoryFields"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"CategoryFields"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Category"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"icon"}},{"kind":"Field","name":{"kind":"Name","value":"kind"}}]}}]} as unknown as DocumentNode<CreateCategoryMutation, CreateCategoryMutationVariables>;
@@ -423,4 +467,4 @@ export const DeleteCategoryDocument = {"kind":"Document","definitions":[{"kind":
 export const AuthCurrenciesDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"AuthCurrencies"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"currencies"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"code"}},{"kind":"Field","name":{"kind":"Name","value":"name"}}]}}]}}]} as unknown as DocumentNode<AuthCurrenciesQuery, AuthCurrenciesQueryVariables>;
 export const SignInDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"SignIn"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"SignInInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"signIn"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"token"}}]}}]}}]} as unknown as DocumentNode<SignInMutation, SignInMutationVariables>;
 export const SignUpDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"SignUp"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"SignUpInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"signUp"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"token"}}]}}]}}]} as unknown as DocumentNode<SignUpMutation, SignUpMutationVariables>;
-export const CategoriesDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"Categories"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"categories"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"edges"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"node"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"kind"}},{"kind":"FragmentSpread","name":{"kind":"Name","value":"CategoryFields"}}]}}]}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"CategoryFields"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Category"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"icon"}},{"kind":"Field","name":{"kind":"Name","value":"kind"}}]}}]} as unknown as DocumentNode<CategoriesQuery, CategoriesQueryVariables>;
+export const CategoriesDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"Categories"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"after"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"categories"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"after"},"value":{"kind":"Variable","name":{"kind":"Name","value":"after"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"edges"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"cursor"}},{"kind":"Field","name":{"kind":"Name","value":"node"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"kind"}},{"kind":"FragmentSpread","name":{"kind":"Name","value":"CategoryFields"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"pageInfo"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"hasNextPage"}},{"kind":"Field","name":{"kind":"Name","value":"endCursor"}}]}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"CategoryFields"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Category"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"icon"}},{"kind":"Field","name":{"kind":"Name","value":"kind"}}]}}]} as unknown as DocumentNode<CategoriesQuery, CategoriesQueryVariables>;

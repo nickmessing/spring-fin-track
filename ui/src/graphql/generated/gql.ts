@@ -21,7 +21,7 @@ type Documents = {
     "\n    query AuthCurrencies {\n      currencies {\n        code\n        name\n      }\n    }\n  ": typeof types.AuthCurrenciesDocument,
     "\n    mutation SignIn($input: SignInInput!) {\n      signIn(input: $input) {\n        token\n      }\n    }\n  ": typeof types.SignInDocument,
     "\n    mutation SignUp($input: SignUpInput!) {\n      signUp(input: $input) {\n        token\n      }\n    }\n  ": typeof types.SignUpDocument,
-    "\n    query Categories {\n      categories {\n        edges {\n          node {\n            id\n            kind\n            ...CategoryFields\n          }\n        }\n      }\n    }\n  ": typeof types.CategoriesDocument,
+    "\n    query Categories($after: String) {\n      categories(after: $after) {\n        edges {\n          cursor\n          node {\n            id\n            kind\n            ...CategoryFields\n          }\n        }\n        pageInfo {\n          hasNextPage\n          endCursor\n        }\n      }\n    }\n  ": typeof types.CategoriesDocument,
 };
 const documents: Documents = {
     "\n  fragment CategoryFields on Category {\n    id\n    name\n    icon\n    kind\n  }\n": types.CategoryFieldsFragmentDoc,
@@ -31,7 +31,7 @@ const documents: Documents = {
     "\n    query AuthCurrencies {\n      currencies {\n        code\n        name\n      }\n    }\n  ": types.AuthCurrenciesDocument,
     "\n    mutation SignIn($input: SignInInput!) {\n      signIn(input: $input) {\n        token\n      }\n    }\n  ": types.SignInDocument,
     "\n    mutation SignUp($input: SignUpInput!) {\n      signUp(input: $input) {\n        token\n      }\n    }\n  ": types.SignUpDocument,
-    "\n    query Categories {\n      categories {\n        edges {\n          node {\n            id\n            kind\n            ...CategoryFields\n          }\n        }\n      }\n    }\n  ": types.CategoriesDocument,
+    "\n    query Categories($after: String) {\n      categories(after: $after) {\n        edges {\n          cursor\n          node {\n            id\n            kind\n            ...CategoryFields\n          }\n        }\n        pageInfo {\n          hasNextPage\n          endCursor\n        }\n      }\n    }\n  ": types.CategoriesDocument,
 };
 
 /**
@@ -79,7 +79,7 @@ export function graphql(source: "\n    mutation SignUp($input: SignUpInput!) {\n
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
-export function graphql(source: "\n    query Categories {\n      categories {\n        edges {\n          node {\n            id\n            kind\n            ...CategoryFields\n          }\n        }\n      }\n    }\n  "): (typeof documents)["\n    query Categories {\n      categories {\n        edges {\n          node {\n            id\n            kind\n            ...CategoryFields\n          }\n        }\n      }\n    }\n  "];
+export function graphql(source: "\n    query Categories($after: String) {\n      categories(after: $after) {\n        edges {\n          cursor\n          node {\n            id\n            kind\n            ...CategoryFields\n          }\n        }\n        pageInfo {\n          hasNextPage\n          endCursor\n        }\n      }\n    }\n  "): (typeof documents)["\n    query Categories($after: String) {\n      categories(after: $after) {\n        edges {\n          cursor\n          node {\n            id\n            kind\n            ...CategoryFields\n          }\n        }\n        pageInfo {\n          hasNextPage\n          endCursor\n        }\n      }\n    }\n  "];
 
 export function graphql(source: string) {
   return (documents as any)[source] ?? {};
