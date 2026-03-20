@@ -15,6 +15,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
@@ -27,12 +28,12 @@ public class TransactionService {
     private final CategoryRepository categoryRepository;
     private final UserRepository userRepository;
 
-    public List<Transaction> findPage(UUID userId, IdCursor after, int limit) {
+    public List<Transaction> findPage(UUID userId, IdCursor after, Instant from, Instant to, int limit) {
         Pageable pageable = PageRequest.of(0, limit);
         if (after != null) {
-            return transactionRepository.findByUserIdAfterCursor(userId, after.id(), pageable);
+            return transactionRepository.findByUserIdAfterCursor(userId, after.id(), from, to, pageable);
         }
-        return transactionRepository.findByUserId(userId, pageable);
+        return transactionRepository.findByUserId(userId, from, to, pageable);
     }
 
     public Transaction findById(UUID userId, UUID id) {

@@ -22,4 +22,9 @@ public interface AccountRepository extends JpaRepository<Account, UUID> {
     List<Account> findByUserId(UUID userId, Pageable pageable);
 
     Optional<Account> findByIdAndUserId(UUID id, UUID userId);
+
+    @Query("SELECT DISTINCT a.currency FROM Account a WHERE a.user.id = :userId")
+    List<String> findDistinctCurrenciesByUserId(UUID userId);
+
+    List<Account> findAllByUserId(UUID userId);
 }

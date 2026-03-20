@@ -12,6 +12,7 @@ import org.springframework.graphql.data.method.annotation.MutationMapping;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
 import org.springframework.stereotype.Controller;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
@@ -38,9 +39,13 @@ public class TransactionResolver {
             UUID destinationAccountId,
             UUID categoryId) {}
 
+    public record TransactionFilterInput(Instant from, Instant to) {}
+
+    public record TransactionFilter(Instant from, Instant to) {}
+
     public record TransactionEdge(Transaction node, String cursor) {}
 
-    public record TransactionConnection(List<TransactionEdge> edges, PageInfo pageInfo) {}
+    public record TransactionConnection(TransactionFilter filter, List<TransactionEdge> edges, PageInfo pageInfo) {}
 
     private final TransactionService transactionService;
 
@@ -51,14 +56,18 @@ public class TransactionResolver {
 
     @QueryMapping
     public TransactionConnection transactions(
+            @Argument TransactionFilterInput filter,
             @Argument Integer first,
             @Argument String after) {
         UUID userId = AuthUtil.currentUserId();
         int limit = PaginationUtil.resolveFirst(first);
 
+        Instant from = filter != null ? filter.from() : null;
+        Instant to = filter != null ? filter.to() : null;
+
         IdCursor cursor = after != null ? IdCursor.deserialize(after) : null;
 
-        List<Transaction> results = transactionService.findPage(userId, cursor, limit + 1);
+        List<Transaction> results = transactionService.findPage(userId, cursor, from, to, limit + 1);
         boolean hasNextPage = results.size() > limit;
         List<Transaction> page = hasNextPage ? results.subList(0, limit) : results;
 
@@ -70,7 +79,7 @@ public class TransactionResolver {
                 hasNextPage,
                 edges.isEmpty() ? null : edges.getLast().cursor());
 
-        return new TransactionConnection(edges, pageInfo);
+        return new TransactionConnection(new TransactionFilter(from, to), edges, pageInfo);
     }
 
     @MutationMapping

@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -13,13 +14,17 @@ import java.util.UUID;
 public interface TransactionRepository extends JpaRepository<Transaction, UUID> {
     @Query("""
             SELECT t FROM Transaction t WHERE t.user.id = :userId AND t.id < :afterId
+            AND (:from IS NULL OR t.createdAt >= :from)
+            AND (:to IS NULL OR t.createdAt <= :to)
             ORDER BY t.id DESC""")
-    List<Transaction> findByUserIdAfterCursor(UUID userId, UUID afterId, Pageable pageable);
+    List<Transaction> findByUserIdAfterCursor(UUID userId, UUID afterId, Instant from, Instant to, Pageable pageable);
 
     @Query("""
             SELECT t FROM Transaction t WHERE t.user.id = :userId
+            AND (:from IS NULL OR t.createdAt >= :from)
+            AND (:to IS NULL OR t.createdAt <= :to)
             ORDER BY t.id DESC""")
-    List<Transaction> findByUserId(UUID userId, Pageable pageable);
+    List<Transaction> findByUserId(UUID userId, Instant from, Instant to, Pageable pageable);
 
     Optional<Transaction> findByIdAndUserId(UUID id, UUID userId);
 
@@ -54,4 +59,19 @@ public interface TransactionRepository extends JpaRepository<Transaction, UUID> 
             UPDATE Transaction t SET t.destinationAccount.id = :targetId
             WHERE t.destinationAccount.id = :sourceId AND t.user.id = :userId""")
     void reassignDestinationAccount(UUID sourceId, UUID targetId, UUID userId);
+
+    @Query("""
+            SELECT t FROM Transaction t WHERE t.user.id = :userId AND t.kind = 'TRANSFER'
+            AND t.account.currency != t.destinationAccount.currency
+            AND (t.account.currency = :currency OR t.destinationAccount.currency = :currency)
+            AND t.createdAt >= :since
+            ORDER BY t.createdAt DESC""")
+    List<Transaction> findTransfersInvolvingCurrencySince(UUID userId, String currency, Instant since);
+
+    @Query("""
+            SELECT t FROM Transaction t WHERE t.user.id = :userId AND t.kind = 'TRANSFER'
+            AND t.account.currency != t.destinationAccount.currency
+            AND (t.account.currency = :currency OR t.destinationAccount.currency = :currency)
+            ORDER BY t.createdAt DESC""")
+    List<Transaction> findTransfersInvolvingCurrency(UUID userId, String currency, Pageable pageable);
 }

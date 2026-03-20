@@ -105,7 +105,13 @@ type TransactionEdge {
   cursor: String!
 }
 
+type TransactionFilter {
+  from: DateTime
+  to: DateTime
+}
+
 type TransactionConnection {
+  filter: TransactionFilter!
   edges: [TransactionEdge!]!
   pageInfo: PageInfo!
 }
@@ -119,11 +125,16 @@ type Query {
   account(id: ID!): Account
   accounts(first: Int, after: String): AccountConnection!
   transaction(id: ID!): Transaction
-  transactions(first: Int, after: String): TransactionConnection!
+  transactions(filter: TransactionFilterInput, first: Int, after: String): TransactionConnection!
 }
 
 input CategoryFilterInput {
   kind: CategoryKind
+}
+
+input TransactionFilterInput {
+  from: DateTime
+  to: DateTime
 }
 
 input CreateCategoryInput {
