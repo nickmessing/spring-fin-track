@@ -20,6 +20,7 @@ public class CategoryService {
 
     private final CategoryRepository categoryRepository;
     private final UserRepository userRepository;
+    private final TransactionService transactionService;
 
     public List<Category> findPage(UUID userId, Category.Kind kind, NamedCursor after, int limit) {
         Pageable pageable = PageRequest.of(0, limit);
@@ -73,7 +74,11 @@ public class CategoryService {
         Category category = categoryRepository.findByIdAndUserId(id, userId)
                 .orElseThrow(() -> new IllegalArgumentException("Category not found"));
 
-        // TODO: if mergeIntoId != null, reassign transactions to target
+        if (mergeIntoId != null) {
+            categoryRepository.findByIdAndUserId(mergeIntoId, userId)
+                    .orElseThrow(() -> new IllegalArgumentException("Merge target category not found"));
+            transactionService.reassignCategory(id, mergeIntoId, userId);
+        }
 
         categoryRepository.delete(category);
         return true;

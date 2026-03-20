@@ -115,21 +115,11 @@ type Query {
   currencies: [CurrencyInfo!]!
   currency(code: CurrencyCode!): CurrencyInfo
   category(id: ID!): Category
-  categories(
-    filter: CategoryFilterInput
-    first: Int
-    after: String
-  ): CategoryConnection!
+  categories(filter: CategoryFilterInput, first: Int, after: String): CategoryConnection!
   account(id: ID!): Account
-  accounts(
-    first: Int
-    after: String
-  ): AccountConnection!
+  accounts(first: Int, after: String): AccountConnection!
   transaction(id: ID!): Transaction
-  transactions(
-    first: Int
-    after: String
-  ): TransactionConnection!
+  transactions(first: Int, after: String): TransactionConnection!
 }
 
 input CategoryFilterInput {
@@ -165,6 +155,7 @@ input UpdateAccountInput {
 }
 
 input CreateTransactionInput {
+  id: ID
   kind: TransactionKind!
   amount: Long!
   destinationAmount: Long

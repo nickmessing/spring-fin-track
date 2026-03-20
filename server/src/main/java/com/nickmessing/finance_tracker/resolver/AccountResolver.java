@@ -6,6 +6,7 @@ import com.nickmessing.finance_tracker.resolver.common.NamedCursor;
 import com.nickmessing.finance_tracker.resolver.common.PageInfo;
 import com.nickmessing.finance_tracker.resolver.common.PaginationUtil;
 import com.nickmessing.finance_tracker.service.AccountService;
+import com.nickmessing.finance_tracker.service.TransactionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.MutationMapping;
@@ -30,6 +31,7 @@ public class AccountResolver {
     public record AccountConnection(List<AccountEdge> edges, PageInfo pageInfo) {}
 
     private final AccountService accountService;
+    private final TransactionService transactionService;
 
     @QueryMapping
     public Account account(@Argument UUID id) {
@@ -62,8 +64,7 @@ public class AccountResolver {
 
     @SchemaMapping(typeName = "Account", field = "balance")
     public long balance(Account account) {
-        // TODO: add proper balance calculation based on transactions
-        return account.getInitialBalance();
+        return account.getInitialBalance() + transactionService.computeBalance(account.getId());
     }
 
     @MutationMapping

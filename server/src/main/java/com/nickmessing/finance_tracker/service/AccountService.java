@@ -21,6 +21,7 @@ public class AccountService {
 
     private final AccountRepository accountRepository;
     private final UserRepository userRepository;
+    private final TransactionService transactionService;
 
     public List<Account> findPage(UUID userId, NamedCursor after, int limit) {
         Pageable pageable = PageRequest.of(0, limit);
@@ -71,7 +72,11 @@ public class AccountService {
         Account account = accountRepository.findByIdAndUserId(id, userId)
                 .orElseThrow(() -> new IllegalArgumentException("Account not found"));
 
-        // TODO: if mergeIntoId != null, reassign transactions to target (Task 5)
+        if (mergeIntoId != null) {
+            accountRepository.findByIdAndUserId(mergeIntoId, userId)
+                    .orElseThrow(() -> new IllegalArgumentException("Merge target account not found"));
+            transactionService.reassignAccount(id, mergeIntoId, userId);
+        }
 
         accountRepository.delete(account);
         return true;
