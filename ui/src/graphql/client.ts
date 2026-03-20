@@ -3,8 +3,7 @@ import { ApolloClient, ApolloLink, HttpLink, InMemoryCache } from '@apollo/clien
 const httpLink = new HttpLink({ uri: '/graphql' })
 
 const authLink = new ApolloLink((operation, forward) => {
-  const raw = localStorage.getItem('auth-token')
-  const token = raw ? (JSON.parse(raw) as string) : null
+  const token = localStorage.getItem('auth-token')
   if (token) {
     operation.setContext({
       headers: { Authorization: `Bearer ${token}` },
