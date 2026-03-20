@@ -3,6 +3,7 @@ package com.nickmessing.finance_tracker.repository;
 import com.nickmessing.finance_tracker.entity.Transaction;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 
@@ -12,20 +13,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-public interface TransactionRepository extends JpaRepository<Transaction, UUID> {
-    @Query("""
-            SELECT t FROM Transaction t WHERE t.user.id = :userId AND t.id < :afterId
-            AND (:from IS NULL OR t.createdAt >= :from)
-            AND (:to IS NULL OR t.createdAt <= :to)
-            ORDER BY t.id DESC""")
-    List<Transaction> findByUserIdAfterCursor(UUID userId, UUID afterId, Instant from, Instant to, Pageable pageable);
-
-    @Query("""
-            SELECT t FROM Transaction t WHERE t.user.id = :userId
-            AND (:from IS NULL OR t.createdAt >= :from)
-            AND (:to IS NULL OR t.createdAt <= :to)
-            ORDER BY t.id DESC""")
-    List<Transaction> findByUserId(UUID userId, Instant from, Instant to, Pageable pageable);
+public interface TransactionRepository extends JpaRepository<Transaction, UUID>, JpaSpecificationExecutor<Transaction> {
 
     Optional<Transaction> findByIdAndUserId(UUID id, UUID userId);
 
@@ -63,22 +51,38 @@ public interface TransactionRepository extends JpaRepository<Transaction, UUID> 
 
     @Query("""
             SELECT COALESCE(SUM(t.amount), 0) FROM Transaction t
+            WHERE t.user.id = :userId AND t.kind = 'INCOME'""")
+    long sumIncome(UUID userId);
+
+    @Query("""
+            SELECT COALESCE(SUM(t.amount), 0) FROM Transaction t
             WHERE t.user.id = :userId AND t.kind = 'INCOME'
-            AND (:from IS NULL OR t.createdAt >= :from) AND (:to IS NULL OR t.createdAt <= :to)""")
-    long sumIncome(UUID userId, Instant from, Instant to);
+            AND t.createdAt >= :from AND t.createdAt <= :to""")
+    long sumIncomeInRange(UUID userId, Instant from, Instant to);
+
+    @Query("""
+            SELECT COALESCE(SUM(t.amount), 0) FROM Transaction t
+            WHERE t.user.id = :userId AND t.kind = 'EXPENSE'""")
+    long sumExpense(UUID userId);
 
     @Query("""
             SELECT COALESCE(SUM(t.amount), 0) FROM Transaction t
             WHERE t.user.id = :userId AND t.kind = 'EXPENSE'
-            AND (:from IS NULL OR t.createdAt >= :from) AND (:to IS NULL OR t.createdAt <= :to)""")
-    long sumExpense(UUID userId, Instant from, Instant to);
+            AND t.createdAt >= :from AND t.createdAt <= :to""")
+    long sumExpenseInRange(UUID userId, Instant from, Instant to);
 
     @Query("""
             SELECT t.category, SUM(t.amount) FROM Transaction t
             WHERE t.user.id = :userId AND t.kind IN ('INCOME', 'EXPENSE')
-            AND (:from IS NULL OR t.createdAt >= :from) AND (:to IS NULL OR t.createdAt <= :to)
             GROUP BY t.category ORDER BY SUM(t.amount) DESC""")
-    List<Object[]> sumByCategory(UUID userId, Instant from, Instant to);
+    List<Object[]> sumByCategory(UUID userId);
+
+    @Query("""
+            SELECT t.category, SUM(t.amount) FROM Transaction t
+            WHERE t.user.id = :userId AND t.kind IN ('INCOME', 'EXPENSE')
+            AND t.createdAt >= :from AND t.createdAt <= :to
+            GROUP BY t.category ORDER BY SUM(t.amount) DESC""")
+    List<Object[]> sumByCategoryInRange(UUID userId, Instant from, Instant to);
 
     @Query("""
             SELECT COALESCE(SUM(CASE

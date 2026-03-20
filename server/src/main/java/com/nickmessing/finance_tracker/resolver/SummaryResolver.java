@@ -10,6 +10,7 @@ import org.springframework.stereotype.Controller;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.UUID;
 
 @Controller
 @RequiredArgsConstructor
@@ -23,12 +24,22 @@ public class SummaryResolver {
 
     @QueryMapping
     public Summary summary(@Argument Instant from, @Argument Instant to) {
-        var userId = AuthUtil.currentUserId();
+        UUID userId = AuthUtil.currentUserId();
+        boolean hasRange = from != null && to != null;
 
-        long totalIncome = transactionRepository.sumIncome(userId, from, to);
-        long totalExpense = transactionRepository.sumExpense(userId, from, to);
+        long totalIncome = hasRange
+                ? transactionRepository.sumIncomeInRange(userId, from, to)
+                : transactionRepository.sumIncome(userId);
 
-        List<CategoryTotal> byCategory = transactionRepository.sumByCategory(userId, from, to).stream()
+        long totalExpense = hasRange
+                ? transactionRepository.sumExpenseInRange(userId, from, to)
+                : transactionRepository.sumExpense(userId);
+
+        List<Object[]> raw = hasRange
+                ? transactionRepository.sumByCategoryInRange(userId, from, to)
+                : transactionRepository.sumByCategory(userId);
+
+        List<CategoryTotal> byCategory = raw.stream()
                 .map(row -> new CategoryTotal((Category) row[0], (long) row[1]))
                 .toList();
 

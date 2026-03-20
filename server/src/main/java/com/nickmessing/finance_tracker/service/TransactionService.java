@@ -7,11 +7,13 @@ import com.nickmessing.finance_tracker.entity.User;
 import com.nickmessing.finance_tracker.repository.AccountRepository;
 import com.nickmessing.finance_tracker.repository.CategoryRepository;
 import com.nickmessing.finance_tracker.repository.TransactionRepository;
+import com.nickmessing.finance_tracker.repository.TransactionSpecs;
 import com.nickmessing.finance_tracker.repository.UserRepository;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import com.nickmessing.finance_tracker.resolver.common.IdCursor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,11 +31,17 @@ public class TransactionService {
     private final UserRepository userRepository;
 
     public List<Transaction> findPage(UUID userId, IdCursor after, Instant from, Instant to, int limit) {
-        Pageable pageable = PageRequest.of(0, limit);
+        Specification<Transaction> spec = Specification.where(TransactionSpecs.userId(userId));
         if (after != null) {
-            return transactionRepository.findByUserIdAfterCursor(userId, after.id(), from, to, pageable);
+            spec = spec.and(TransactionSpecs.afterCursor(after.id()));
         }
-        return transactionRepository.findByUserId(userId, from, to, pageable);
+        if (from != null) {
+            spec = spec.and(TransactionSpecs.createdFrom(from));
+        }
+        if (to != null) {
+            spec = spec.and(TransactionSpecs.createdTo(to));
+        }
+        return transactionRepository.findAll(spec, PageRequest.of(0, limit, Sort.by(Sort.Direction.DESC, "id"))).getContent();
     }
 
     public Transaction findById(UUID userId, UUID id) {
