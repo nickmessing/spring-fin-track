@@ -150,6 +150,7 @@ input UpdateCategoryInput {
 }
 
 input CreateAccountInput {
+  id: ID
   icon: String!
   name: String!
   currency: CurrencyCode!
