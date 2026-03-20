@@ -61,6 +61,56 @@ public interface TransactionRepository extends JpaRepository<Transaction, UUID> 
     void reassignDestinationAccount(UUID sourceId, UUID targetId, UUID userId);
 
     @Query("""
+            SELECT COALESCE(SUM(t.amount), 0) FROM Transaction t
+            WHERE t.user.id = :userId AND t.kind = 'INCOME'
+            AND (:from IS NULL OR t.createdAt >= :from) AND (:to IS NULL OR t.createdAt <= :to)""")
+    long sumIncome(UUID userId, Instant from, Instant to);
+
+    @Query("""
+            SELECT COALESCE(SUM(t.amount), 0) FROM Transaction t
+            WHERE t.user.id = :userId AND t.kind = 'EXPENSE'
+            AND (:from IS NULL OR t.createdAt >= :from) AND (:to IS NULL OR t.createdAt <= :to)""")
+    long sumExpense(UUID userId, Instant from, Instant to);
+
+    @Query("""
+            SELECT t.category, SUM(t.amount) FROM Transaction t
+            WHERE t.user.id = :userId AND t.kind IN ('INCOME', 'EXPENSE')
+            AND (:from IS NULL OR t.createdAt >= :from) AND (:to IS NULL OR t.createdAt <= :to)
+            GROUP BY t.category ORDER BY SUM(t.amount) DESC""")
+    List<Object[]> sumByCategory(UUID userId, Instant from, Instant to);
+
+    @Query("""
+            SELECT COALESCE(SUM(CASE
+                WHEN t.kind = 'INCOME' THEN t.amount
+                WHEN t.kind = 'EXPENSE' THEN -t.amount
+                WHEN t.kind = 'TRANSFER' THEN -t.amount
+                ELSE 0 END), 0)
+            FROM Transaction t WHERE t.account.id = :accountId AND t.createdAt < :before""")
+    long sumForAccountBefore(UUID accountId, Instant before);
+
+    @Query("""
+            SELECT COALESCE(SUM(CASE
+                WHEN t.destinationAmount IS NOT NULL THEN t.destinationAmount
+                ELSE t.amount END), 0)
+            FROM Transaction t WHERE t.destinationAccount.id = :accountId AND t.kind = 'TRANSFER'
+            AND t.createdAt < :before""")
+    long sumTransfersIntoAccountBefore(UUID accountId, Instant before);
+
+    @Query("""
+            SELECT t FROM Transaction t
+            WHERE t.account.id = :accountId
+            AND t.createdAt >= :from AND t.createdAt <= :to
+            ORDER BY t.createdAt ASC""")
+    List<Transaction> findByAccountIdInRange(UUID accountId, Instant from, Instant to);
+
+    @Query("""
+            SELECT t FROM Transaction t
+            WHERE t.destinationAccount.id = :accountId AND t.kind = 'TRANSFER'
+            AND t.createdAt >= :from AND t.createdAt <= :to
+            ORDER BY t.createdAt ASC""")
+    List<Transaction> findTransfersIntoAccountInRange(UUID accountId, Instant from, Instant to);
+
+    @Query("""
             SELECT t FROM Transaction t WHERE t.user.id = :userId AND t.kind = 'TRANSFER'
             AND t.account.currency != t.destinationAccount.currency
             AND (t.account.currency = :currency OR t.destinationAccount.currency = :currency)

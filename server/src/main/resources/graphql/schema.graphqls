@@ -116,6 +116,28 @@ type TransactionConnection {
   pageInfo: PageInfo!
 }
 
+type CategoryTotal {
+  category: Category!
+  total: Long!
+}
+
+type Summary {
+  totalIncome: Long!
+  totalExpense: Long!
+  byCategory: [CategoryTotal!]!
+}
+
+enum Granularity {
+  DAY
+  WEEK
+  MONTH
+}
+
+type BalancePoint {
+  date: DateTime!
+  balance: Long!
+}
+
 type Query {
   me: User
   currencies: [CurrencyInfo!]!
@@ -126,6 +148,8 @@ type Query {
   accounts(first: Int, after: String): AccountConnection!
   transaction(id: ID!): Transaction
   transactions(filter: TransactionFilterInput, first: Int, after: String): TransactionConnection!
+  summary(from: DateTime, to: DateTime): Summary!
+  accountBalanceHistory(accountId: ID!, granularity: Granularity!, from: DateTime!, to: DateTime!): [BalancePoint!]!
 }
 
 input CategoryFilterInput {
