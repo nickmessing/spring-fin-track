@@ -15,8 +15,6 @@ enum TransactionKind {
 
 type PageInfo {
   hasNextPage: Boolean!
-  hasPreviousPage: Boolean!
-  startCursor: String
   endCursor: String
 }
 
@@ -121,22 +119,16 @@ type Query {
     filter: CategoryFilterInput
     first: Int
     after: String
-    last: Int
-    before: String
   ): CategoryConnection!
   account(id: ID!): Account
   accounts(
     first: Int
     after: String
-    last: Int
-    before: String
   ): AccountConnection!
   transaction(id: ID!): Transaction
   transactions(
     first: Int
     after: String
-    last: Int
-    before: String
   ): TransactionConnection!
 }
 
@@ -145,6 +137,7 @@ input CategoryFilterInput {
 }
 
 input CreateCategoryInput {
+  id: ID
   kind: CategoryKind!
   icon: String!
   name: String!
