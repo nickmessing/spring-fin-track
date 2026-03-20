@@ -1,4 +1,6 @@
 scalar DateTime
+scalar CurrencyCode
+scalar Long
 
 enum CategoryKind {
   INCOME
@@ -18,32 +20,28 @@ type PageInfo {
   endCursor: String
 }
 
+type CurrencyInfo {
+  code: CurrencyCode!
+  name: String!
+  symbol: String!
+  minorUnits: Int!
+}
+
+type UserCurrency {
+  code: CurrencyCode!
+  info: CurrencyInfo!
+  rate: Float!
+}
+
 type User {
   id: ID!
   email: String!
   displayName: String
   createdAt: DateTime!
-  balance: Float!
-  currency: Currency
-}
-
-type Currency {
-  id: ID!
-  symbol: String!
-  name: String!
-  isDefault: Boolean!
-  rate: Float!
-  createdAt: DateTime!
-}
-
-type CurrencyEdge {
-  node: Currency!
-  cursor: String!
-}
-
-type CurrencyConnection {
-  edges: [CurrencyEdge!]!
-  pageInfo: PageInfo!
+  updatedAt: DateTime!
+  balance: Long!
+  defaultCurrency: CurrencyCode!
+  currencies: [UserCurrency!]!
 }
 
 type Category {
@@ -52,6 +50,7 @@ type Category {
   icon: String!
   name: String!
   createdAt: DateTime!
+  updatedAt: DateTime!
 }
 
 type CategoryEdge {
@@ -59,7 +58,12 @@ type CategoryEdge {
   cursor: String!
 }
 
+type CategoryFilter {
+  kind: CategoryKind
+}
+
 type CategoryConnection {
+  filter: CategoryFilter!
   edges: [CategoryEdge!]!
   pageInfo: PageInfo!
 }
@@ -68,10 +72,11 @@ type Account {
   id: ID!
   icon: String!
   name: String!
-  currency: Currency!
-  balance: Float!
-  initialBalance: Float!
+  currency: CurrencyCode!
+  balance: Long!
+  initialBalance: Long!
   createdAt: DateTime!
+  updatedAt: DateTime!
 }
 
 type AccountEdge {
@@ -87,13 +92,14 @@ type AccountConnection {
 type Transaction {
   id: ID!
   kind: TransactionKind!
-  amount: Float!
-  destinationAmount: Float # for transfer transactions, inter-currency transfers
+  amount: Long!
+  destinationAmount: Long
   description: String
   account: Account!
   destinationAccount: Account
   category: Category
   createdAt: DateTime!
+  updatedAt: DateTime!
 }
 
 type TransactionEdge {
@@ -108,16 +114,11 @@ type TransactionConnection {
 
 type Query {
   me: User
-  currency(id: ID!): Currency
-  currencies(
-    first: Int
-    after: String
-    last: Int
-    before: String
-  ): CurrencyConnection!
+  currencies: [CurrencyInfo!]!
+  currency(code: CurrencyCode!): CurrencyInfo
   category(id: ID!): Category
   categories(
-    kind: CategoryKind
+    filter: CategoryFilterInput
     first: Int
     after: String
     last: Int
@@ -139,17 +140,8 @@ type Query {
   ): TransactionConnection!
 }
 
-input CreateCurrencyInput {
-  symbol: String!
-  name: String!
-  isDefault: Boolean
-}
-
-input UpdateCurrencyInput {
-  id: ID!
-  symbol: String
-  name: String
-  isDefault: Boolean
+input CategoryFilterInput {
+  kind: CategoryKind
 }
 
 input CreateCategoryInput {
@@ -167,21 +159,21 @@ input UpdateCategoryInput {
 input CreateAccountInput {
   icon: String!
   name: String!
-  currencyId: ID!
-  initialBalance: Float!
+  currency: CurrencyCode!
+  initialBalance: Long!
 }
 
 input UpdateAccountInput {
   id: ID!
   icon: String
   name: String
-  initialBalance: Float
+  initialBalance: Long
 }
 
 input CreateTransactionInput {
   kind: TransactionKind!
-  amount: Float!
-  destinationAmount: Float
+  amount: Long!
+  destinationAmount: Long
   description: String
   accountId: ID!
   destinationAccountId: ID
@@ -190,8 +182,8 @@ input CreateTransactionInput {
 
 input UpdateTransactionInput {
   id: ID!
-  amount: Float
-  destinationAmount: Float
+  amount: Long
+  destinationAmount: Long
   description: String
   accountId: ID
   destinationAccountId: ID
@@ -207,6 +199,7 @@ input SignUpInput {
   email: String!
   password: String!
   displayName: String
+  defaultCurrency: CurrencyCode!
 }
 
 input SignInInput {
@@ -218,17 +211,15 @@ type Mutation {
   signUp(input: SignUpInput!): AuthPayload!
   signIn(input: SignInInput!): AuthPayload!
 
-  createCurrency(input: CreateCurrencyInput!): Currency!
-  updateCurrency(input: UpdateCurrencyInput!): Currency!
-  deleteCurrency(id: ID!): Boolean!
+  updateDefaultCurrency(currency: CurrencyCode!): User!
 
   createCategory(input: CreateCategoryInput!): Category!
   updateCategory(input: UpdateCategoryInput!): Category!
-  deleteCategory(id: ID!): Boolean!
+  deleteCategory(id: ID!, mergeIntoId: ID): Boolean!
 
   createAccount(input: CreateAccountInput!): Account!
   updateAccount(input: UpdateAccountInput!): Account!
-  deleteAccount(id: ID!): Boolean!
+  deleteAccount(id: ID!, mergeIntoId: ID): Boolean!
 
   createTransaction(input: CreateTransactionInput!): Transaction!
   updateTransaction(input: UpdateTransactionInput!): Transaction!
@@ -236,9 +227,6 @@ type Mutation {
 }
 
 type Subscription {
-  currencyCreated: Currency!
-  currencyUpdated: Currency!
-  currencyDeleted: ID!
   categoryCreated: Category!
   categoryUpdated: Category!
   categoryDeleted: ID!
