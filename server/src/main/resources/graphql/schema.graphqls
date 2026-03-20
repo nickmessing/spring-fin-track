@@ -210,15 +210,3 @@ type Mutation {
   updateTransaction(input: UpdateTransactionInput!): Transaction!
   deleteTransaction(id: ID!): Boolean!
 }
-
-type Subscription {
-  categoryCreated: Category!
-  categoryUpdated: Category!
-  categoryDeleted: ID!
-  accountCreated: Account!
-  accountUpdated: Account!
-  accountDeleted: ID!
-  transactionCreated: Transaction!
-  transactionUpdated: Transaction!
-  transactionDeleted: ID!
-}
