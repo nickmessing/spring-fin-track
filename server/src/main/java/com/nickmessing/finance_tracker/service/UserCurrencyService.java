@@ -82,7 +82,7 @@ public class UserCurrencyService {
             } else {
                 double rate = computeRate(userId, defaultCurrency, account.getCurrency());
                 if (rate > 0) {
-                    total += Math.round(accountBalance / rate);
+                    total += Math.round(accountBalance * rate);
                 }
             }
         }
