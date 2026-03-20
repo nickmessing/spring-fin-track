@@ -1,59 +1,168 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
-import { TransactionKind } from '@/graphql'
-import { transactions, categoryColors } from '@/lib/mock-data'
+import { useQuery } from '@vue/apollo-composable'
+import { computed, ref, watch } from 'vue'
 import DonutChart from '@/components/DonutChart.vue'
-import TransactionItem from '@/components/TransactionItem.vue'
 import PeriodSelector from '@/components/PeriodSelector.vue'
+import TransactionItem from '@/components/TransactionItem.vue'
+import { useFormatAmount } from '@/composables/useFormatAmount'
+import { graphql, TransactionKind } from '@/graphql'
+
+const { formatAmount } = useFormatAmount()
 
 const period = ref('Month')
 
-function formatAmount(cents: number): string {
-  return `$${(cents / 100).toFixed(2)}`
-}
-
-const now = new Date()
-
-function isInPeriod(iso: string, p: string): boolean {
-  const d = new Date(iso)
-  const diffMs = now.getTime() - d.getTime()
-  const diffDays = diffMs / (1000 * 60 * 60 * 24)
+function getDateRange(p: string): { from: string; to: string } {
+  const now = new Date()
+  const to = now.toISOString()
+  const from = new Date(now)
 
   switch (p) {
     case 'Day':
-      return diffDays < 1
+      from.setHours(0, 0, 0, 0)
+      break
     case 'Week':
-      return diffDays < 7
+      from.setDate(from.getDate() - 7)
+      break
     case 'Month':
-      return diffDays < 30
+      from.setMonth(from.getMonth() - 1)
+      break
     case 'Year':
-      return diffDays < 365
-    default:
-      return true
+      from.setFullYear(from.getFullYear() - 1)
+      break
+  }
+
+  return { from: from.toISOString(), to }
+}
+
+const dateRange = computed(() => getDateRange(period.value))
+
+const { current: meResult } = useQuery(
+  graphql(`
+    query DashboardMe {
+      me {
+        id
+        balance
+      }
+    }
+  `),
+)
+
+const { current, fetchMore } = useQuery(
+  graphql(`
+    query Transactions($filter: TransactionFilterInput, $after: String) {
+      transactions(filter: $filter, after: $after) {
+        edges {
+          cursor
+          node {
+            id
+            kind
+            amount
+            createdAt
+            category {
+              id
+              name
+              icon
+            }
+            ...TransactionFields
+          }
+        }
+        pageInfo {
+          hasNextPage
+          endCursor
+        }
+      }
+    }
+  `),
+  {
+    variables: () => ({
+      filter: { from: dateRange.value.from, to: dateRange.value.to },
+    }),
+  },
+)
+
+const transactions = computed(() =>
+  current.value.resultState === 'complete'
+    ? current.value.result.transactions.edges.map((e) => e.node)
+    : [],
+)
+
+const pageInfo = computed(() =>
+  current.value.resultState === 'complete' ? current.value.result.transactions.pageInfo : null,
+)
+
+const loadingMore = ref(false)
+
+async function loadMore() {
+  if (!pageInfo.value?.hasNextPage || loadingMore.value) return
+
+  loadingMore.value = true
+  try {
+    await fetchMore({
+      variables: {
+        filter: { from: dateRange.value.from, to: dateRange.value.to },
+        after: pageInfo.value.endCursor,
+      },
+      updateQuery(existing, { fetchMoreResult }) {
+        if (fetchMoreResult == null) return existing
+
+        const existingEdges = existing.transactions.edges ?? []
+        const incomingEdges = fetchMoreResult.transactions.edges ?? []
+        const existingCursors = new Set(existingEdges.map((e) => e.cursor))
+
+        return {
+          ...fetchMoreResult,
+          transactions: {
+            ...fetchMoreResult.transactions,
+            edges: [
+              ...existingEdges,
+              ...incomingEdges.filter((e) => !existingCursors.has(e.cursor)),
+            ],
+          },
+        }
+      },
+    })
+  } finally {
+    loadingMore.value = false
   }
 }
 
-const filteredTransactions = computed(() =>
-  transactions.filter((tx) => isInPeriod(tx.createdAt, period.value)),
-)
-
 const totalExpense = computed(() =>
-  filteredTransactions.value
+  transactions.value
     .filter((tx) => tx.kind === TransactionKind.Expense)
     .reduce((sum, tx) => sum + tx.amount, 0),
 )
 
 const totalIncome = computed(() =>
-  filteredTransactions.value
+  transactions.value
     .filter((tx) => tx.kind === TransactionKind.Income)
     .reduce((sum, tx) => sum + tx.amount, 0),
 )
 
-const balance = computed(() => totalIncome.value - totalExpense.value)
+const balance = computed(() =>
+  meResult.value.resultState === 'complete' && meResult.value.result.me
+    ? meResult.value.result.me.balance
+    : totalIncome.value - totalExpense.value,
+)
+
+const CHART_COLORS = [
+  '#f97316',
+  '#ef4444',
+  '#8b5cf6',
+  '#06b6d4',
+  '#10b981',
+  '#f59e0b',
+  '#ec4899',
+  '#6366f1',
+  '#14b8a6',
+  '#f43f5e',
+  '#a855f7',
+  '#0ea5e9',
+]
 
 const chartSegments = computed(() => {
   const map = new Map<string, { value: number; color: string; label: string }>()
-  for (const tx of filteredTransactions.value) {
+  let colorIdx = 0
+  for (const tx of transactions.value) {
     if (tx.kind !== TransactionKind.Expense || !tx.category) continue
     const catId = tx.category.id
     const existing = map.get(catId)
@@ -62,7 +171,7 @@ const chartSegments = computed(() => {
     } else {
       map.set(catId, {
         value: tx.amount,
-        color: categoryColors[catId] ?? '#6b7280',
+        color: CHART_COLORS[colorIdx++ % CHART_COLORS.length]!,
         label: tx.category.name,
       })
     }
@@ -70,7 +179,6 @@ const chartSegments = computed(() => {
   return Array.from(map.values()).sort((a, b) => b.value - a.value)
 })
 
-// Group transactions by date
 function formatDateGroup(iso: string): string {
   const d = new Date(iso)
   const today = new Date()
@@ -87,10 +195,10 @@ function formatDateGroup(iso: string): string {
 }
 
 const groupedTransactions = computed(() => {
-  const groups: Array<{ label: string; items: typeof filteredTransactions.value }> = []
-  const map = new Map<string, typeof filteredTransactions.value>()
+  const groups: Array<{ label: string; items: typeof transactions.value }> = []
+  const map = new Map<string, typeof transactions.value>()
 
-  for (const tx of filteredTransactions.value) {
+  for (const tx of transactions.value) {
     const label = formatDateGroup(tx.createdAt)
     const existing = map.get(label)
     if (existing) {
@@ -183,5 +291,22 @@ const groupedTransactions = computed(() => {
         </div>
       </div>
     </div>
+
+    <p
+      v-if="transactions.length === 0 && current.resultState === 'complete'"
+      class="py-8 text-center text-sm text-zinc-400 dark:text-zinc-500"
+    >
+      No transactions for this period
+    </p>
+
+    <!-- Load more -->
+    <button
+      v-if="pageInfo?.hasNextPage"
+      :disabled="loadingMore"
+      class="mt-4 w-full rounded-xl border border-zinc-200 py-2.5 text-sm font-medium text-zinc-600 transition-colors hover:bg-zinc-50 disabled:opacity-50 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-800"
+      @click="loadMore"
+    >
+      {{ loadingMore ? 'Loading...' : 'Load more' }}
+    </button>
   </div>
 </template>

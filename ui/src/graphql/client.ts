@@ -15,5 +15,13 @@ const authLink = new ApolloLink((operation, forward) => {
 export const apolloClient = new ApolloClient({
   link: authLink.concat(httpLink),
   cache: new InMemoryCache(),
+  defaultOptions: {
+    watchQuery: {
+      fetchPolicy: 'cache-and-network',
+    },
+    query: {
+      fetchPolicy: 'network-only',
+    },
+  },
   dataMasking: true,
 })

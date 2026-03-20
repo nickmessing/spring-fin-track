@@ -47,7 +47,11 @@ watch(
   },
 )
 
-const { mutate: createCategory, loading: creating, error: createError } = useMutation(
+const {
+  mutate: createCategory,
+  loading: creating,
+  error: createError,
+} = useMutation(
   graphql(`
     mutation CreateCategory($input: CreateCategoryInput!) {
       createCategory(input: $input) {
@@ -58,7 +62,11 @@ const { mutate: createCategory, loading: creating, error: createError } = useMut
   `),
 )
 
-const { mutate: updateCategory, loading: updating, error: updateError } = useMutation(
+const {
+  mutate: updateCategory,
+  loading: updating,
+  error: updateError,
+} = useMutation(
   graphql(`
     mutation UpdateCategory($input: UpdateCategoryInput!) {
       updateCategory(input: $input) {
@@ -69,7 +77,11 @@ const { mutate: updateCategory, loading: updating, error: updateError } = useMut
   `),
 )
 
-const { mutate: deleteCategory, loading: deleting, error: deleteError } = useMutation(
+const {
+  mutate: deleteCategory,
+  loading: deleting,
+  error: deleteError,
+} = useMutation(
   graphql(`
     mutation DeleteCategory($id: ID!) {
       deleteCategory(id: $id)
@@ -139,7 +151,11 @@ async function handleDelete() {
           {{ isEditing ? 'Edit Category' : 'New Category' }}
         </DialogTitle>
         <DialogDescription class="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
-          {{ isEditing ? 'Update the category details.' : `Add a new ${categoryKind.toLowerCase()} category.` }}
+          {{
+            isEditing
+              ? 'Update the category details.'
+              : `Add a new ${categoryKind.toLowerCase()} category.`
+          }}
         </DialogDescription>
 
         <form class="mt-4 flex flex-col gap-4" @submit.prevent="handleSubmit">

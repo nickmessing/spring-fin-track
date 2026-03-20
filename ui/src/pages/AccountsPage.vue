@@ -12,6 +12,7 @@ const { current: meResult, refetch: refetchMe } = useQuery(
   graphql(`
     query AccountsMe {
       me {
+        id
         balance
       }
     }

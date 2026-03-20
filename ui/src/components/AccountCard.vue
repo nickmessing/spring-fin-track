@@ -22,7 +22,7 @@ const emit = defineEmits<{
   edit: [data: { id: string; name: string; icon: string; currency: string; initialBalance: number }]
 }>()
 
-const { formatAmount } = useFormatAmount()
+const { formatAmountWithCurrency } = useFormatAmount()
 
 const { current } = useFragment({
   fragment: AccountFields,
@@ -58,7 +58,7 @@ const { current } = useFragment({
       </p>
     </div>
     <p class="shrink-0 text-base font-bold text-zinc-900 dark:text-zinc-100">
-      {{ formatAmount(current.result.balance) }}
+      {{ formatAmountWithCurrency(current.result.balance, current.result.currency) }}
     </p>
   </button>
 </template>

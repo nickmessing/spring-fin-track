@@ -1,15 +1,34 @@
 <script setup lang="ts">
+import { useFragment } from '@vue/apollo-composable'
 import { computed } from 'vue'
-import type { Transaction } from '@/graphql'
-import { TransactionKind } from '@/graphql'
+import { useFormatAmount } from '@/composables/useFormatAmount'
+import { graphql, TransactionKind } from '@/graphql'
+
+const TransactionFields = graphql(`
+  fragment TransactionFields on Transaction {
+    id
+    kind
+    amount
+    description
+    createdAt
+    category {
+      id
+      name
+      icon
+    }
+  }
+`)
 
 const { transaction } = defineProps<{
-  transaction: Transaction
+  transaction: { __typename: 'Transaction'; id: string }
 }>()
 
-function formatAmount(cents: number): string {
-  return `$${(cents / 100).toFixed(2)}`
-}
+const { formatAmount } = useFormatAmount()
+
+const { current } = useFragment({
+  fragment: TransactionFields,
+  from: () => transaction,
+})
 
 function formatTime(iso: string): string {
   const d = new Date(iso)
@@ -17,28 +36,32 @@ function formatTime(iso: string): string {
 }
 
 const displayAmount = computed(() => {
-  const tx = transaction
+  if (current.value.resultState !== 'complete') return ''
+  const tx = current.value.result
   if (tx.kind === TransactionKind.Expense) return `-${formatAmount(tx.amount)}`
   if (tx.kind === TransactionKind.Income) return `+${formatAmount(tx.amount)}`
   return formatAmount(tx.amount)
 })
 
 const amountColor = computed(() => {
-  const tx = transaction
+  if (current.value.resultState !== 'complete') return ''
+  const tx = current.value.result
   if (tx.kind === TransactionKind.Expense) return 'text-red-500'
   if (tx.kind === TransactionKind.Income) return 'text-emerald-500'
   return 'text-orange-500'
 })
 
 const icon = computed(() => {
-  const tx = transaction
+  if (current.value.resultState !== 'complete') return ''
+  const tx = current.value.result
   if (tx.category) return tx.category.icon
   if (tx.kind === TransactionKind.Transfer) return '\u21C4'
   return '\u2022'
 })
 
 const label = computed(() => {
-  const tx = transaction
+  if (current.value.resultState !== 'complete') return ''
+  const tx = current.value.result
   if (tx.category) return tx.category.name
   if (tx.kind === TransactionKind.Transfer) return 'Transfer'
   return 'Unknown'
@@ -47,6 +70,7 @@ const label = computed(() => {
 
 <template>
   <div
+    v-if="current.resultState === 'complete'"
     class="flex items-center gap-3 rounded-xl px-3 py-3 transition-colors active:bg-zinc-50 dark:active:bg-zinc-900"
   >
     <!-- Icon -->
@@ -61,8 +85,11 @@ const label = computed(() => {
       <p class="truncate text-sm font-medium text-zinc-900 dark:text-zinc-100">
         {{ label }}
       </p>
-      <p v-if="transaction.description" class="truncate text-xs text-zinc-500 dark:text-zinc-400">
-        {{ transaction.description }}
+      <p
+        v-if="current.result.description"
+        class="truncate text-xs text-zinc-500 dark:text-zinc-400"
+      >
+        {{ current.result.description }}
       </p>
     </div>
 
@@ -72,7 +99,7 @@ const label = computed(() => {
         {{ displayAmount }}
       </p>
       <p class="text-[10px] text-zinc-400 dark:text-zinc-500">
-        {{ formatTime(transaction.createdAt) }}
+        {{ formatTime(current.result.createdAt) }}
       </p>
     </div>
   </div>

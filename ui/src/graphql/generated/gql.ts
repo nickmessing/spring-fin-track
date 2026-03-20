@@ -23,13 +23,19 @@ type Documents = {
   '\n    mutation CreateCategory($input: CreateCategoryInput!) {\n      createCategory(input: $input) {\n        id\n        ...CategoryFields\n      }\n    }\n  ': typeof types.CreateCategoryDocument
   '\n    mutation UpdateCategory($input: UpdateCategoryInput!) {\n      updateCategory(input: $input) {\n        id\n        ...CategoryFields\n      }\n    }\n  ': typeof types.UpdateCategoryDocument
   '\n    mutation DeleteCategory($id: ID!) {\n      deleteCategory(id: $id)\n    }\n  ': typeof types.DeleteCategoryDocument
-  '\n  query MeForCurrency {\n    me {\n      defaultCurrency {\n        symbol\n        minorUnits\n      }\n    }\n  }\n': typeof types.MeForCurrencyDocument
-  '\n    query AccountsMe {\n      me {\n        balance\n      }\n    }\n  ': typeof types.AccountsMeDocument
+  '\n  fragment TransactionFields on Transaction {\n    id\n    kind\n    amount\n    description\n    createdAt\n    category {\n      id\n      name\n      icon\n    }\n  }\n': typeof types.TransactionFieldsFragmentDoc
+  '\n  query MeForCurrency {\n    me {\n      id\n      defaultCurrency {\n        code\n        minorUnits\n      }\n    }\n  }\n': typeof types.MeForCurrencyDocument
+  '\n    query AccountsMe {\n      me {\n        id\n        balance\n      }\n    }\n  ': typeof types.AccountsMeDocument
   '\n    query Accounts($after: String) {\n      accounts(after: $after) {\n        edges {\n          cursor\n          node {\n            id\n            balance\n            ...AccountFields\n          }\n        }\n        pageInfo {\n          hasNextPage\n          endCursor\n        }\n      }\n    }\n  ': typeof types.AccountsDocument
+  '\n    query AddTransactionCategories {\n      categories {\n        edges {\n          node {\n            id\n            name\n            icon\n            kind\n          }\n        }\n      }\n    }\n  ': typeof types.AddTransactionCategoriesDocument
+  '\n    query AddTransactionAccounts {\n      accounts {\n        edges {\n          node {\n            id\n            name\n            icon\n            currency\n          }\n        }\n      }\n    }\n  ': typeof types.AddTransactionAccountsDocument
+  '\n    mutation CreateTransaction($input: CreateTransactionInput!) {\n      createTransaction(input: $input) {\n        id\n        ...TransactionFields\n      }\n    }\n  ': typeof types.CreateTransactionDocument
   '\n    query AuthCurrencies {\n      currencies {\n        code\n        name\n      }\n    }\n  ': typeof types.AuthCurrenciesDocument
   '\n    mutation SignIn($input: SignInInput!) {\n      signIn(input: $input) {\n        token\n      }\n    }\n  ': typeof types.SignInDocument
   '\n    mutation SignUp($input: SignUpInput!) {\n      signUp(input: $input) {\n        token\n      }\n    }\n  ': typeof types.SignUpDocument
   '\n    query Categories($after: String) {\n      categories(after: $after) {\n        edges {\n          cursor\n          node {\n            id\n            kind\n            ...CategoryFields\n          }\n        }\n        pageInfo {\n          hasNextPage\n          endCursor\n        }\n      }\n    }\n  ': typeof types.CategoriesDocument
+  '\n    query DashboardMe {\n      me {\n        id\n        balance\n      }\n    }\n  ': typeof types.DashboardMeDocument
+  '\n    query Transactions($filter: TransactionFilterInput, $after: String) {\n      transactions(filter: $filter, after: $after) {\n        edges {\n          cursor\n          node {\n            id\n            kind\n            amount\n            createdAt\n            category {\n              id\n              name\n              icon\n            }\n            ...TransactionFields\n          }\n        }\n        pageInfo {\n          hasNextPage\n          endCursor\n        }\n      }\n    }\n  ': typeof types.TransactionsDocument
 }
 const documents: Documents = {
   '\n  fragment AccountFields on Account {\n    id\n    name\n    icon\n    currency\n    balance\n    initialBalance\n  }\n':
@@ -50,12 +56,20 @@ const documents: Documents = {
     types.UpdateCategoryDocument,
   '\n    mutation DeleteCategory($id: ID!) {\n      deleteCategory(id: $id)\n    }\n  ':
     types.DeleteCategoryDocument,
-  '\n  query MeForCurrency {\n    me {\n      defaultCurrency {\n        symbol\n        minorUnits\n      }\n    }\n  }\n':
+  '\n  fragment TransactionFields on Transaction {\n    id\n    kind\n    amount\n    description\n    createdAt\n    category {\n      id\n      name\n      icon\n    }\n  }\n':
+    types.TransactionFieldsFragmentDoc,
+  '\n  query MeForCurrency {\n    me {\n      id\n      defaultCurrency {\n        code\n        minorUnits\n      }\n    }\n  }\n':
     types.MeForCurrencyDocument,
-  '\n    query AccountsMe {\n      me {\n        balance\n      }\n    }\n  ':
+  '\n    query AccountsMe {\n      me {\n        id\n        balance\n      }\n    }\n  ':
     types.AccountsMeDocument,
   '\n    query Accounts($after: String) {\n      accounts(after: $after) {\n        edges {\n          cursor\n          node {\n            id\n            balance\n            ...AccountFields\n          }\n        }\n        pageInfo {\n          hasNextPage\n          endCursor\n        }\n      }\n    }\n  ':
     types.AccountsDocument,
+  '\n    query AddTransactionCategories {\n      categories {\n        edges {\n          node {\n            id\n            name\n            icon\n            kind\n          }\n        }\n      }\n    }\n  ':
+    types.AddTransactionCategoriesDocument,
+  '\n    query AddTransactionAccounts {\n      accounts {\n        edges {\n          node {\n            id\n            name\n            icon\n            currency\n          }\n        }\n      }\n    }\n  ':
+    types.AddTransactionAccountsDocument,
+  '\n    mutation CreateTransaction($input: CreateTransactionInput!) {\n      createTransaction(input: $input) {\n        id\n        ...TransactionFields\n      }\n    }\n  ':
+    types.CreateTransactionDocument,
   '\n    query AuthCurrencies {\n      currencies {\n        code\n        name\n      }\n    }\n  ':
     types.AuthCurrenciesDocument,
   '\n    mutation SignIn($input: SignInInput!) {\n      signIn(input: $input) {\n        token\n      }\n    }\n  ':
@@ -64,6 +78,10 @@ const documents: Documents = {
     types.SignUpDocument,
   '\n    query Categories($after: String) {\n      categories(after: $after) {\n        edges {\n          cursor\n          node {\n            id\n            kind\n            ...CategoryFields\n          }\n        }\n        pageInfo {\n          hasNextPage\n          endCursor\n        }\n      }\n    }\n  ':
     types.CategoriesDocument,
+  '\n    query DashboardMe {\n      me {\n        id\n        balance\n      }\n    }\n  ':
+    types.DashboardMeDocument,
+  '\n    query Transactions($filter: TransactionFilterInput, $after: String) {\n      transactions(filter: $filter, after: $after) {\n        edges {\n          cursor\n          node {\n            id\n            kind\n            amount\n            createdAt\n            category {\n              id\n              name\n              icon\n            }\n            ...TransactionFields\n          }\n        }\n        pageInfo {\n          hasNextPage\n          endCursor\n        }\n      }\n    }\n  ':
+    types.TransactionsDocument,
 }
 
 /**
@@ -138,20 +156,44 @@ export function graphql(
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function graphql(
-  source: '\n  query MeForCurrency {\n    me {\n      defaultCurrency {\n        symbol\n        minorUnits\n      }\n    }\n  }\n',
-): (typeof documents)['\n  query MeForCurrency {\n    me {\n      defaultCurrency {\n        symbol\n        minorUnits\n      }\n    }\n  }\n']
+  source: '\n  fragment TransactionFields on Transaction {\n    id\n    kind\n    amount\n    description\n    createdAt\n    category {\n      id\n      name\n      icon\n    }\n  }\n',
+): (typeof documents)['\n  fragment TransactionFields on Transaction {\n    id\n    kind\n    amount\n    description\n    createdAt\n    category {\n      id\n      name\n      icon\n    }\n  }\n']
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function graphql(
-  source: '\n    query AccountsMe {\n      me {\n        balance\n      }\n    }\n  ',
-): (typeof documents)['\n    query AccountsMe {\n      me {\n        balance\n      }\n    }\n  ']
+  source: '\n  query MeForCurrency {\n    me {\n      id\n      defaultCurrency {\n        code\n        minorUnits\n      }\n    }\n  }\n',
+): (typeof documents)['\n  query MeForCurrency {\n    me {\n      id\n      defaultCurrency {\n        code\n        minorUnits\n      }\n    }\n  }\n']
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(
+  source: '\n    query AccountsMe {\n      me {\n        id\n        balance\n      }\n    }\n  ',
+): (typeof documents)['\n    query AccountsMe {\n      me {\n        id\n        balance\n      }\n    }\n  ']
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function graphql(
   source: '\n    query Accounts($after: String) {\n      accounts(after: $after) {\n        edges {\n          cursor\n          node {\n            id\n            balance\n            ...AccountFields\n          }\n        }\n        pageInfo {\n          hasNextPage\n          endCursor\n        }\n      }\n    }\n  ',
 ): (typeof documents)['\n    query Accounts($after: String) {\n      accounts(after: $after) {\n        edges {\n          cursor\n          node {\n            id\n            balance\n            ...AccountFields\n          }\n        }\n        pageInfo {\n          hasNextPage\n          endCursor\n        }\n      }\n    }\n  ']
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(
+  source: '\n    query AddTransactionCategories {\n      categories {\n        edges {\n          node {\n            id\n            name\n            icon\n            kind\n          }\n        }\n      }\n    }\n  ',
+): (typeof documents)['\n    query AddTransactionCategories {\n      categories {\n        edges {\n          node {\n            id\n            name\n            icon\n            kind\n          }\n        }\n      }\n    }\n  ']
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(
+  source: '\n    query AddTransactionAccounts {\n      accounts {\n        edges {\n          node {\n            id\n            name\n            icon\n            currency\n          }\n        }\n      }\n    }\n  ',
+): (typeof documents)['\n    query AddTransactionAccounts {\n      accounts {\n        edges {\n          node {\n            id\n            name\n            icon\n            currency\n          }\n        }\n      }\n    }\n  ']
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(
+  source: '\n    mutation CreateTransaction($input: CreateTransactionInput!) {\n      createTransaction(input: $input) {\n        id\n        ...TransactionFields\n      }\n    }\n  ',
+): (typeof documents)['\n    mutation CreateTransaction($input: CreateTransactionInput!) {\n      createTransaction(input: $input) {\n        id\n        ...TransactionFields\n      }\n    }\n  ']
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
@@ -176,6 +218,18 @@ export function graphql(
 export function graphql(
   source: '\n    query Categories($after: String) {\n      categories(after: $after) {\n        edges {\n          cursor\n          node {\n            id\n            kind\n            ...CategoryFields\n          }\n        }\n        pageInfo {\n          hasNextPage\n          endCursor\n        }\n      }\n    }\n  ',
 ): (typeof documents)['\n    query Categories($after: String) {\n      categories(after: $after) {\n        edges {\n          cursor\n          node {\n            id\n            kind\n            ...CategoryFields\n          }\n        }\n        pageInfo {\n          hasNextPage\n          endCursor\n        }\n      }\n    }\n  ']
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(
+  source: '\n    query DashboardMe {\n      me {\n        id\n        balance\n      }\n    }\n  ',
+): (typeof documents)['\n    query DashboardMe {\n      me {\n        id\n        balance\n      }\n    }\n  ']
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(
+  source: '\n    query Transactions($filter: TransactionFilterInput, $after: String) {\n      transactions(filter: $filter, after: $after) {\n        edges {\n          cursor\n          node {\n            id\n            kind\n            amount\n            createdAt\n            category {\n              id\n              name\n              icon\n            }\n            ...TransactionFields\n          }\n        }\n        pageInfo {\n          hasNextPage\n          endCursor\n        }\n      }\n    }\n  ',
+): (typeof documents)['\n    query Transactions($filter: TransactionFilterInput, $after: String) {\n      transactions(filter: $filter, after: $after) {\n        edges {\n          cursor\n          node {\n            id\n            kind\n            amount\n            createdAt\n            category {\n              id\n              name\n              icon\n            }\n            ...TransactionFields\n          }\n        }\n        pageInfo {\n          hasNextPage\n          endCursor\n        }\n      }\n    }\n  ']
 
 export function graphql(source: string) {
   return (documents as any)[source] ?? {}
