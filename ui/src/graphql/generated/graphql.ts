@@ -665,6 +665,39 @@ export type TransactionsQuery = {
   }
 }
 
+export type SettingsMeQueryVariables = Exact<{ [key: string]: never }>
+
+export type SettingsMeQuery = {
+  __typename: 'Query'
+  me?: {
+    __typename: 'User'
+    id: string
+    email: string
+    displayName?: string | null
+    defaultCurrency: { __typename: 'CurrencyInfo'; code: string; name: string }
+  } | null
+}
+
+export type SettingsCurrenciesQueryVariables = Exact<{ [key: string]: never }>
+
+export type SettingsCurrenciesQuery = {
+  __typename: 'Query'
+  currencies: Array<{ __typename: 'CurrencyInfo'; code: string; name: string }>
+}
+
+export type UpdateDefaultCurrencyMutationVariables = Exact<{
+  currency: Scalars['CurrencyCode']['input']
+}>
+
+export type UpdateDefaultCurrencyMutation = {
+  __typename: 'Mutation'
+  updateDefaultCurrency: {
+    __typename: 'User'
+    id: string
+    defaultCurrency: { __typename: 'CurrencyInfo'; code: string; name: string }
+  }
+}
+
 export const AccountFieldsFragmentDoc = {
   kind: 'Document',
   definitions: [
@@ -1994,3 +2027,120 @@ export const TransactionsDocument = {
     },
   ],
 } as unknown as DocumentNode<TransactionsQuery, TransactionsQueryVariables>
+export const SettingsMeDocument = {
+  kind: 'Document',
+  definitions: [
+    {
+      kind: 'OperationDefinition',
+      operation: 'query',
+      name: { kind: 'Name', value: 'SettingsMe' },
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'me' },
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [
+                { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'email' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'displayName' } },
+                {
+                  kind: 'Field',
+                  name: { kind: 'Name', value: 'defaultCurrency' },
+                  selectionSet: {
+                    kind: 'SelectionSet',
+                    selections: [
+                      { kind: 'Field', name: { kind: 'Name', value: 'code' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'name' } },
+                    ],
+                  },
+                },
+              ],
+            },
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<SettingsMeQuery, SettingsMeQueryVariables>
+export const SettingsCurrenciesDocument = {
+  kind: 'Document',
+  definitions: [
+    {
+      kind: 'OperationDefinition',
+      operation: 'query',
+      name: { kind: 'Name', value: 'SettingsCurrencies' },
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'currencies' },
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [
+                { kind: 'Field', name: { kind: 'Name', value: 'code' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'name' } },
+              ],
+            },
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<SettingsCurrenciesQuery, SettingsCurrenciesQueryVariables>
+export const UpdateDefaultCurrencyDocument = {
+  kind: 'Document',
+  definitions: [
+    {
+      kind: 'OperationDefinition',
+      operation: 'mutation',
+      name: { kind: 'Name', value: 'UpdateDefaultCurrency' },
+      variableDefinitions: [
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'currency' } },
+          type: {
+            kind: 'NonNullType',
+            type: { kind: 'NamedType', name: { kind: 'Name', value: 'CurrencyCode' } },
+          },
+        },
+      ],
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'updateDefaultCurrency' },
+            arguments: [
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'currency' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'currency' } },
+              },
+            ],
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [
+                { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+                {
+                  kind: 'Field',
+                  name: { kind: 'Name', value: 'defaultCurrency' },
+                  selectionSet: {
+                    kind: 'SelectionSet',
+                    selections: [
+                      { kind: 'Field', name: { kind: 'Name', value: 'code' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'name' } },
+                    ],
+                  },
+                },
+              ],
+            },
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<UpdateDefaultCurrencyMutation, UpdateDefaultCurrencyMutationVariables>

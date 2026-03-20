@@ -39,6 +39,9 @@ type Documents = {
   '\n    query Categories($after: String) {\n      categories(after: $after) {\n        edges {\n          cursor\n          node {\n            id\n            kind\n            ...CategoryFields\n          }\n        }\n        pageInfo {\n          hasNextPage\n          endCursor\n        }\n      }\n    }\n  ': typeof types.CategoriesDocument
   '\n    query DashboardMe {\n      me {\n        id\n        balance\n      }\n    }\n  ': typeof types.DashboardMeDocument
   '\n    query Transactions($filter: TransactionFilterInput, $after: String) {\n      transactions(filter: $filter, after: $after) {\n        edges {\n          cursor\n          node {\n            id\n            kind\n            amount\n            createdAt\n            category {\n              id\n              name\n              icon\n            }\n            ...TransactionFields\n          }\n        }\n        pageInfo {\n          hasNextPage\n          endCursor\n        }\n      }\n    }\n  ': typeof types.TransactionsDocument
+  '\n    query SettingsMe {\n      me {\n        id\n        email\n        displayName\n        defaultCurrency {\n          code\n          name\n        }\n      }\n    }\n  ': typeof types.SettingsMeDocument
+  '\n    query SettingsCurrencies {\n      currencies {\n        code\n        name\n      }\n    }\n  ': typeof types.SettingsCurrenciesDocument
+  '\n    mutation UpdateDefaultCurrency($currency: CurrencyCode!) {\n      updateDefaultCurrency(currency: $currency) {\n        id\n        defaultCurrency {\n          code\n          name\n        }\n      }\n    }\n  ': typeof types.UpdateDefaultCurrencyDocument
 }
 const documents: Documents = {
   '\n  fragment AccountFields on Account {\n    id\n    name\n    icon\n    currency\n    balance\n    initialBalance\n  }\n':
@@ -91,6 +94,12 @@ const documents: Documents = {
     types.DashboardMeDocument,
   '\n    query Transactions($filter: TransactionFilterInput, $after: String) {\n      transactions(filter: $filter, after: $after) {\n        edges {\n          cursor\n          node {\n            id\n            kind\n            amount\n            createdAt\n            category {\n              id\n              name\n              icon\n            }\n            ...TransactionFields\n          }\n        }\n        pageInfo {\n          hasNextPage\n          endCursor\n        }\n      }\n    }\n  ':
     types.TransactionsDocument,
+  '\n    query SettingsMe {\n      me {\n        id\n        email\n        displayName\n        defaultCurrency {\n          code\n          name\n        }\n      }\n    }\n  ':
+    types.SettingsMeDocument,
+  '\n    query SettingsCurrencies {\n      currencies {\n        code\n        name\n      }\n    }\n  ':
+    types.SettingsCurrenciesDocument,
+  '\n    mutation UpdateDefaultCurrency($currency: CurrencyCode!) {\n      updateDefaultCurrency(currency: $currency) {\n        id\n        defaultCurrency {\n          code\n          name\n        }\n      }\n    }\n  ':
+    types.UpdateDefaultCurrencyDocument,
 }
 
 /**
@@ -257,6 +266,24 @@ export function graphql(
 export function graphql(
   source: '\n    query Transactions($filter: TransactionFilterInput, $after: String) {\n      transactions(filter: $filter, after: $after) {\n        edges {\n          cursor\n          node {\n            id\n            kind\n            amount\n            createdAt\n            category {\n              id\n              name\n              icon\n            }\n            ...TransactionFields\n          }\n        }\n        pageInfo {\n          hasNextPage\n          endCursor\n        }\n      }\n    }\n  ',
 ): (typeof documents)['\n    query Transactions($filter: TransactionFilterInput, $after: String) {\n      transactions(filter: $filter, after: $after) {\n        edges {\n          cursor\n          node {\n            id\n            kind\n            amount\n            createdAt\n            category {\n              id\n              name\n              icon\n            }\n            ...TransactionFields\n          }\n        }\n        pageInfo {\n          hasNextPage\n          endCursor\n        }\n      }\n    }\n  ']
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(
+  source: '\n    query SettingsMe {\n      me {\n        id\n        email\n        displayName\n        defaultCurrency {\n          code\n          name\n        }\n      }\n    }\n  ',
+): (typeof documents)['\n    query SettingsMe {\n      me {\n        id\n        email\n        displayName\n        defaultCurrency {\n          code\n          name\n        }\n      }\n    }\n  ']
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(
+  source: '\n    query SettingsCurrencies {\n      currencies {\n        code\n        name\n      }\n    }\n  ',
+): (typeof documents)['\n    query SettingsCurrencies {\n      currencies {\n        code\n        name\n      }\n    }\n  ']
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(
+  source: '\n    mutation UpdateDefaultCurrency($currency: CurrencyCode!) {\n      updateDefaultCurrency(currency: $currency) {\n        id\n        defaultCurrency {\n          code\n          name\n        }\n      }\n    }\n  ',
+): (typeof documents)['\n    mutation UpdateDefaultCurrency($currency: CurrencyCode!) {\n      updateDefaultCurrency(currency: $currency) {\n        id\n        defaultCurrency {\n          code\n          name\n        }\n      }\n    }\n  ']
 
 export function graphql(source: string) {
   return (documents as any)[source] ?? {}
