@@ -1,26 +1,10 @@
 <script setup lang="ts">
-import { useQuery } from '@vue/apollo-composable'
-import { graphql } from './graphql'
+import { useDark } from '@vueuse/core'
+import { RouterView } from 'vue-router'
 
-const { current } = useQuery(
-  graphql(`
-    query Me {
-      currencies {
-        code
-        name
-      }
-    }
-  `),
-)
+useDark()
 </script>
 
 <template>
-  <h1>You did it!</h1>
-  <p>
-    Visit <a href="https://vuejs.org/" target="_blank" rel="noopener">vuejs.org</a> to read the
-    documentation
-  </p>
-  <pre v-if="current.resultState == 'complete'">{{ current.result.currencies }}</pre>
+  <RouterView />
 </template>
-
-<style scoped></style>
