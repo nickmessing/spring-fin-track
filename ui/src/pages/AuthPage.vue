@@ -55,7 +55,7 @@ const {
   `),
 )
 
-const rawError = computed(() => isSignUp.value ? signUpError.value : signInError.value)
+const rawError = computed(() => (isSignUp.value ? signUpError.value : signInError.value))
 const loading = computed(() => signInLoading.value || signUpLoading.value)
 
 function friendlyError(msg: string): string {
@@ -163,7 +163,33 @@ async function handleSubmit() {
 <template>
   <div class="flex min-h-dvh items-center justify-center px-4 py-8">
     <div class="w-full max-w-sm">
-      <h1 class="mb-8 text-center text-2xl font-bold tracking-tight">Finance Tracker</h1>
+      <div class="mb-8 flex flex-col items-center gap-3">
+        <svg
+          viewBox="0 0 160 160"
+          xmlns="http://www.w3.org/2000/svg"
+          class="h-16 w-16 text-orange-500"
+        >
+          <path
+            d="M 132 76 A 52 52 0 1 1 84 28"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="10"
+            stroke-linecap="round"
+          />
+          <line
+            x1="30"
+            y1="130"
+            x2="117"
+            y2="43"
+            stroke="currentColor"
+            stroke-width="8"
+            stroke-linecap="round"
+          />
+          <circle cx="117" cy="43" r="7.5" fill="currentColor" />
+          <circle cx="30" cy="130" r="4.5" fill="currentColor" />
+        </svg>
+        <h1 class="text-2xl font-bold tracking-tight">Finance Tracker</h1>
+      </div>
 
       <form class="flex flex-col gap-4" @submit.prevent="handleSubmit">
         <!-- Extra sign-up fields (animated) -->

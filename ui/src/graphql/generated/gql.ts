@@ -1,6 +1,6 @@
 /* eslint-disable */
-import * as types from './graphql.ts';
-import type { TypedDocumentNode as DocumentNode } from '@graphql-typed-document-node/core';
+import * as types from './graphql.ts'
+import type { TypedDocumentNode as DocumentNode } from '@graphql-typed-document-node/core'
 
 /**
  * Map of all GraphQL operations in the project.
@@ -14,15 +14,18 @@ import type { TypedDocumentNode as DocumentNode } from '@graphql-typed-document-
  * Learn more about it here: https://the-guild.dev/graphql/codegen/plugins/presets/preset-client#reducing-bundle-size
  */
 type Documents = {
-    "\n    query AuthCurrencies {\n      currencies {\n        code\n        name\n      }\n    }\n  ": typeof types.AuthCurrenciesDocument,
-    "\n    mutation SignIn($input: SignInInput!) {\n      signIn(input: $input) {\n        token\n      }\n    }\n  ": typeof types.SignInDocument,
-    "\n    mutation SignUp($input: SignUpInput!) {\n      signUp(input: $input) {\n        token\n      }\n    }\n  ": typeof types.SignUpDocument,
-};
+  '\n    query AuthCurrencies {\n      currencies {\n        code\n        name\n      }\n    }\n  ': typeof types.AuthCurrenciesDocument
+  '\n    mutation SignIn($input: SignInInput!) {\n      signIn(input: $input) {\n        token\n      }\n    }\n  ': typeof types.SignInDocument
+  '\n    mutation SignUp($input: SignUpInput!) {\n      signUp(input: $input) {\n        token\n      }\n    }\n  ': typeof types.SignUpDocument
+}
 const documents: Documents = {
-    "\n    query AuthCurrencies {\n      currencies {\n        code\n        name\n      }\n    }\n  ": types.AuthCurrenciesDocument,
-    "\n    mutation SignIn($input: SignInInput!) {\n      signIn(input: $input) {\n        token\n      }\n    }\n  ": types.SignInDocument,
-    "\n    mutation SignUp($input: SignUpInput!) {\n      signUp(input: $input) {\n        token\n      }\n    }\n  ": types.SignUpDocument,
-};
+  '\n    query AuthCurrencies {\n      currencies {\n        code\n        name\n      }\n    }\n  ':
+    types.AuthCurrenciesDocument,
+  '\n    mutation SignIn($input: SignInInput!) {\n      signIn(input: $input) {\n        token\n      }\n    }\n  ':
+    types.SignInDocument,
+  '\n    mutation SignUp($input: SignUpInput!) {\n      signUp(input: $input) {\n        token\n      }\n    }\n  ':
+    types.SignUpDocument,
+}
 
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
@@ -36,23 +39,30 @@ const documents: Documents = {
  * The query argument is unknown!
  * Please regenerate the types.
  */
-export function graphql(source: string): unknown;
+export function graphql(source: string): unknown
 
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
-export function graphql(source: "\n    query AuthCurrencies {\n      currencies {\n        code\n        name\n      }\n    }\n  "): (typeof documents)["\n    query AuthCurrencies {\n      currencies {\n        code\n        name\n      }\n    }\n  "];
+export function graphql(
+  source: '\n    query AuthCurrencies {\n      currencies {\n        code\n        name\n      }\n    }\n  ',
+): (typeof documents)['\n    query AuthCurrencies {\n      currencies {\n        code\n        name\n      }\n    }\n  ']
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
-export function graphql(source: "\n    mutation SignIn($input: SignInInput!) {\n      signIn(input: $input) {\n        token\n      }\n    }\n  "): (typeof documents)["\n    mutation SignIn($input: SignInInput!) {\n      signIn(input: $input) {\n        token\n      }\n    }\n  "];
+export function graphql(
+  source: '\n    mutation SignIn($input: SignInInput!) {\n      signIn(input: $input) {\n        token\n      }\n    }\n  ',
+): (typeof documents)['\n    mutation SignIn($input: SignInInput!) {\n      signIn(input: $input) {\n        token\n      }\n    }\n  ']
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
-export function graphql(source: "\n    mutation SignUp($input: SignUpInput!) {\n      signUp(input: $input) {\n        token\n      }\n    }\n  "): (typeof documents)["\n    mutation SignUp($input: SignUpInput!) {\n      signUp(input: $input) {\n        token\n      }\n    }\n  "];
+export function graphql(
+  source: '\n    mutation SignUp($input: SignUpInput!) {\n      signUp(input: $input) {\n        token\n      }\n    }\n  ',
+): (typeof documents)['\n    mutation SignUp($input: SignUpInput!) {\n      signUp(input: $input) {\n        token\n      }\n    }\n  ']
 
 export function graphql(source: string) {
-  return (documents as any)[source] ?? {};
+  return (documents as any)[source] ?? {}
 }
 
-export type DocumentType<TDocumentNode extends DocumentNode<any, any>> = TDocumentNode extends DocumentNode<  infer TType,  any>  ? TType  : never;
+export type DocumentType<TDocumentNode extends DocumentNode<any, any>> =
+  TDocumentNode extends DocumentNode<infer TType, any> ? TType : never

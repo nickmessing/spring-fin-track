@@ -6,9 +6,35 @@ const router = createRouter({
   routes: [
     {
       path: '/',
-      name: 'home',
-      component: () => import('@/pages/HomePage.vue'),
+      component: () => import('@/layouts/AppLayout.vue'),
       meta: { requiresAuth: true },
+      children: [
+        {
+          path: '',
+          name: 'dashboard',
+          component: () => import('@/pages/DashboardPage.vue'),
+        },
+        {
+          path: 'accounts',
+          name: 'accounts',
+          component: () => import('@/pages/AccountsPage.vue'),
+        },
+        {
+          path: 'categories',
+          name: 'categories',
+          component: () => import('@/pages/CategoriesPage.vue'),
+        },
+        {
+          path: 'add',
+          name: 'add',
+          component: () => import('@/pages/AddPage.vue'),
+        },
+        {
+          path: 'settings',
+          name: 'settings',
+          component: () => import('@/pages/SettingsPage.vue'),
+        },
+      ],
     },
     {
       path: '/auth',
