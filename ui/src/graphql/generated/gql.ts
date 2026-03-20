@@ -23,13 +23,16 @@ type Documents = {
   '\n    mutation CreateCategory($input: CreateCategoryInput!) {\n      createCategory(input: $input) {\n        id\n        ...CategoryFields\n      }\n    }\n  ': typeof types.CreateCategoryDocument
   '\n    mutation UpdateCategory($input: UpdateCategoryInput!) {\n      updateCategory(input: $input) {\n        id\n        ...CategoryFields\n      }\n    }\n  ': typeof types.UpdateCategoryDocument
   '\n    mutation DeleteCategory($id: ID!) {\n      deleteCategory(id: $id)\n    }\n  ': typeof types.DeleteCategoryDocument
-  '\n  fragment TransactionFields on Transaction {\n    id\n    kind\n    amount\n    description\n    createdAt\n    category {\n      id\n      name\n      icon\n    }\n  }\n': typeof types.TransactionFieldsFragmentDoc
+  '\n  fragment TransactionFields on Transaction {\n    id\n    kind\n    amount\n    destinationAmount\n    description\n    createdAt\n    account {\n      id\n      currency\n    }\n    destinationAccount {\n      id\n      currency\n    }\n    category {\n      id\n      name\n      icon\n    }\n  }\n': typeof types.TransactionFieldsFragmentDoc
   '\n  query MeForCurrency {\n    me {\n      id\n      defaultCurrency {\n        code\n        minorUnits\n      }\n    }\n  }\n': typeof types.MeForCurrencyDocument
   '\n    query AccountsMe {\n      me {\n        id\n        balance\n      }\n    }\n  ': typeof types.AccountsMeDocument
   '\n    query Accounts($after: String) {\n      accounts(after: $after) {\n        edges {\n          cursor\n          node {\n            id\n            balance\n            ...AccountFields\n          }\n        }\n        pageInfo {\n          hasNextPage\n          endCursor\n        }\n      }\n    }\n  ': typeof types.AccountsDocument
+  '\n    query EditTransaction($id: ID!) {\n      transaction(id: $id) {\n        id\n        kind\n        amount\n        destinationAmount\n        description\n        account {\n          id\n        }\n        destinationAccount {\n          id\n        }\n        category {\n          id\n        }\n      }\n    }\n  ': typeof types.EditTransactionDocument
   '\n    query AddTransactionCategories {\n      categories {\n        edges {\n          node {\n            id\n            name\n            icon\n            kind\n          }\n        }\n      }\n    }\n  ': typeof types.AddTransactionCategoriesDocument
   '\n    query AddTransactionAccounts {\n      accounts {\n        edges {\n          node {\n            id\n            name\n            icon\n            currency\n          }\n        }\n      }\n    }\n  ': typeof types.AddTransactionAccountsDocument
   '\n    mutation CreateTransaction($input: CreateTransactionInput!) {\n      createTransaction(input: $input) {\n        id\n        ...TransactionFields\n      }\n    }\n  ': typeof types.CreateTransactionDocument
+  '\n    mutation UpdateTransaction($input: UpdateTransactionInput!) {\n      updateTransaction(input: $input) {\n        id\n        ...TransactionFields\n      }\n    }\n  ': typeof types.UpdateTransactionDocument
+  '\n    mutation DeleteTransaction($id: ID!) {\n      deleteTransaction(id: $id)\n    }\n  ': typeof types.DeleteTransactionDocument
   '\n    query AuthCurrencies {\n      currencies {\n        code\n        name\n      }\n    }\n  ': typeof types.AuthCurrenciesDocument
   '\n    mutation SignIn($input: SignInInput!) {\n      signIn(input: $input) {\n        token\n      }\n    }\n  ': typeof types.SignInDocument
   '\n    mutation SignUp($input: SignUpInput!) {\n      signUp(input: $input) {\n        token\n      }\n    }\n  ': typeof types.SignUpDocument
@@ -56,7 +59,7 @@ const documents: Documents = {
     types.UpdateCategoryDocument,
   '\n    mutation DeleteCategory($id: ID!) {\n      deleteCategory(id: $id)\n    }\n  ':
     types.DeleteCategoryDocument,
-  '\n  fragment TransactionFields on Transaction {\n    id\n    kind\n    amount\n    description\n    createdAt\n    category {\n      id\n      name\n      icon\n    }\n  }\n':
+  '\n  fragment TransactionFields on Transaction {\n    id\n    kind\n    amount\n    destinationAmount\n    description\n    createdAt\n    account {\n      id\n      currency\n    }\n    destinationAccount {\n      id\n      currency\n    }\n    category {\n      id\n      name\n      icon\n    }\n  }\n':
     types.TransactionFieldsFragmentDoc,
   '\n  query MeForCurrency {\n    me {\n      id\n      defaultCurrency {\n        code\n        minorUnits\n      }\n    }\n  }\n':
     types.MeForCurrencyDocument,
@@ -64,12 +67,18 @@ const documents: Documents = {
     types.AccountsMeDocument,
   '\n    query Accounts($after: String) {\n      accounts(after: $after) {\n        edges {\n          cursor\n          node {\n            id\n            balance\n            ...AccountFields\n          }\n        }\n        pageInfo {\n          hasNextPage\n          endCursor\n        }\n      }\n    }\n  ':
     types.AccountsDocument,
+  '\n    query EditTransaction($id: ID!) {\n      transaction(id: $id) {\n        id\n        kind\n        amount\n        destinationAmount\n        description\n        account {\n          id\n        }\n        destinationAccount {\n          id\n        }\n        category {\n          id\n        }\n      }\n    }\n  ':
+    types.EditTransactionDocument,
   '\n    query AddTransactionCategories {\n      categories {\n        edges {\n          node {\n            id\n            name\n            icon\n            kind\n          }\n        }\n      }\n    }\n  ':
     types.AddTransactionCategoriesDocument,
   '\n    query AddTransactionAccounts {\n      accounts {\n        edges {\n          node {\n            id\n            name\n            icon\n            currency\n          }\n        }\n      }\n    }\n  ':
     types.AddTransactionAccountsDocument,
   '\n    mutation CreateTransaction($input: CreateTransactionInput!) {\n      createTransaction(input: $input) {\n        id\n        ...TransactionFields\n      }\n    }\n  ':
     types.CreateTransactionDocument,
+  '\n    mutation UpdateTransaction($input: UpdateTransactionInput!) {\n      updateTransaction(input: $input) {\n        id\n        ...TransactionFields\n      }\n    }\n  ':
+    types.UpdateTransactionDocument,
+  '\n    mutation DeleteTransaction($id: ID!) {\n      deleteTransaction(id: $id)\n    }\n  ':
+    types.DeleteTransactionDocument,
   '\n    query AuthCurrencies {\n      currencies {\n        code\n        name\n      }\n    }\n  ':
     types.AuthCurrenciesDocument,
   '\n    mutation SignIn($input: SignInInput!) {\n      signIn(input: $input) {\n        token\n      }\n    }\n  ':
@@ -156,8 +165,8 @@ export function graphql(
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function graphql(
-  source: '\n  fragment TransactionFields on Transaction {\n    id\n    kind\n    amount\n    description\n    createdAt\n    category {\n      id\n      name\n      icon\n    }\n  }\n',
-): (typeof documents)['\n  fragment TransactionFields on Transaction {\n    id\n    kind\n    amount\n    description\n    createdAt\n    category {\n      id\n      name\n      icon\n    }\n  }\n']
+  source: '\n  fragment TransactionFields on Transaction {\n    id\n    kind\n    amount\n    destinationAmount\n    description\n    createdAt\n    account {\n      id\n      currency\n    }\n    destinationAccount {\n      id\n      currency\n    }\n    category {\n      id\n      name\n      icon\n    }\n  }\n',
+): (typeof documents)['\n  fragment TransactionFields on Transaction {\n    id\n    kind\n    amount\n    destinationAmount\n    description\n    createdAt\n    account {\n      id\n      currency\n    }\n    destinationAccount {\n      id\n      currency\n    }\n    category {\n      id\n      name\n      icon\n    }\n  }\n']
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
@@ -180,6 +189,12 @@ export function graphql(
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function graphql(
+  source: '\n    query EditTransaction($id: ID!) {\n      transaction(id: $id) {\n        id\n        kind\n        amount\n        destinationAmount\n        description\n        account {\n          id\n        }\n        destinationAccount {\n          id\n        }\n        category {\n          id\n        }\n      }\n    }\n  ',
+): (typeof documents)['\n    query EditTransaction($id: ID!) {\n      transaction(id: $id) {\n        id\n        kind\n        amount\n        destinationAmount\n        description\n        account {\n          id\n        }\n        destinationAccount {\n          id\n        }\n        category {\n          id\n        }\n      }\n    }\n  ']
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(
   source: '\n    query AddTransactionCategories {\n      categories {\n        edges {\n          node {\n            id\n            name\n            icon\n            kind\n          }\n        }\n      }\n    }\n  ',
 ): (typeof documents)['\n    query AddTransactionCategories {\n      categories {\n        edges {\n          node {\n            id\n            name\n            icon\n            kind\n          }\n        }\n      }\n    }\n  ']
 /**
@@ -194,6 +209,18 @@ export function graphql(
 export function graphql(
   source: '\n    mutation CreateTransaction($input: CreateTransactionInput!) {\n      createTransaction(input: $input) {\n        id\n        ...TransactionFields\n      }\n    }\n  ',
 ): (typeof documents)['\n    mutation CreateTransaction($input: CreateTransactionInput!) {\n      createTransaction(input: $input) {\n        id\n        ...TransactionFields\n      }\n    }\n  ']
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(
+  source: '\n    mutation UpdateTransaction($input: UpdateTransactionInput!) {\n      updateTransaction(input: $input) {\n        id\n        ...TransactionFields\n      }\n    }\n  ',
+): (typeof documents)['\n    mutation UpdateTransaction($input: UpdateTransactionInput!) {\n      updateTransaction(input: $input) {\n        id\n        ...TransactionFields\n      }\n    }\n  ']
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(
+  source: '\n    mutation DeleteTransaction($id: ID!) {\n      deleteTransaction(id: $id)\n    }\n  ',
+): (typeof documents)['\n    mutation DeleteTransaction($id: ID!) {\n      deleteTransaction(id: $id)\n    }\n  ']
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */

@@ -30,6 +30,12 @@ const router = createRouter({
           component: () => import('@/pages/AddPage.vue'),
         },
         {
+          path: 'edit/:id',
+          name: 'edit-transaction',
+          component: () => import('@/pages/AddPage.vue'),
+          props: true,
+        },
+        {
           path: 'settings',
           name: 'settings',
           component: () => import('@/pages/SettingsPage.vue'),

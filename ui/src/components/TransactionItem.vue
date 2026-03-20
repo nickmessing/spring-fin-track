@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useFragment } from '@vue/apollo-composable'
 import { computed } from 'vue'
+import { useRouter } from 'vue-router'
 import { useFormatAmount } from '@/composables/useFormatAmount'
 import { graphql, TransactionKind } from '@/graphql'
 
@@ -9,8 +10,17 @@ const TransactionFields = graphql(`
     id
     kind
     amount
+    destinationAmount
     description
     createdAt
+    account {
+      id
+      currency
+    }
+    destinationAccount {
+      id
+      currency
+    }
     category {
       id
       name
@@ -23,7 +33,8 @@ const { transaction } = defineProps<{
   transaction: { __typename: 'Transaction'; id: string }
 }>()
 
-const { formatAmount } = useFormatAmount()
+const router = useRouter()
+const { formatAmountWithCurrency } = useFormatAmount()
 
 const { current } = useFragment({
   fragment: TransactionFields,
@@ -38,9 +49,20 @@ function formatTime(iso: string): string {
 const displayAmount = computed(() => {
   if (current.value.resultState !== 'complete') return ''
   const tx = current.value.result
-  if (tx.kind === TransactionKind.Expense) return `-${formatAmount(tx.amount)}`
-  if (tx.kind === TransactionKind.Income) return `+${formatAmount(tx.amount)}`
-  return formatAmount(tx.amount)
+  const fmt = (v: number, currency: string) => formatAmountWithCurrency(v, currency)
+  if (tx.kind === TransactionKind.Expense) return `-${fmt(tx.amount, tx.account.currency)}`
+  if (tx.kind === TransactionKind.Income) return `+${fmt(tx.amount, tx.account.currency)}`
+  // Transfer
+  const from = fmt(tx.amount, tx.account.currency)
+  if (
+    tx.destinationAccount &&
+    tx.destinationAmount &&
+    tx.destinationAccount.currency !== tx.account.currency
+  ) {
+    const to = fmt(tx.destinationAmount, tx.destinationAccount.currency)
+    return `${from} → ${to}`
+  }
+  return from
 })
 
 const amountColor = computed(() => {
@@ -69,9 +91,10 @@ const label = computed(() => {
 </script>
 
 <template>
-  <div
+  <button
     v-if="current.resultState === 'complete'"
-    class="flex items-center gap-3 rounded-xl px-3 py-3 transition-colors active:bg-zinc-50 dark:active:bg-zinc-900"
+    class="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left transition-colors active:bg-zinc-50 dark:active:bg-zinc-900"
+    @click="router.push({ name: 'edit-transaction', params: { id: current.result.id } })"
   >
     <!-- Icon -->
     <div
@@ -102,5 +125,5 @@ const label = computed(() => {
         {{ formatTime(current.result.createdAt) }}
       </p>
     </div>
-  </div>
+  </button>
 </template>
